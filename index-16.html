@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>TernakOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#07090D;--s1:#0C1119;--s2:#111820;--s3:#181F2A;
+  --gold:#C8981A;--gold2:#E5B430;--gd:rgba(200,152,26,.1);--gg:rgba(200,152,26,.22);
+  --green:#00B86B;--red:#E03A52;--cyan:#0091A8;--pur:#7C3AED;
+  --t1:#F0F4FF;--t2:#4A5F7A;--t3:#1E2A38;
+  --bdr:rgba(200,152,26,.15);--b2:rgba(255,255,255,.05);
+  --fd:'Orbitron',monospace;--fb:'Syne',sans-serif;--fm:'Space Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);overflow-x:hidden;}
+::-webkit-scrollbar{width:2px;}::-webkit-scrollbar-thumb{background:var(--gold);}
+/* LIGHT MODE */
+body.light-mode{
+  --bg:#F0F2F5;--s1:#FFFFFF;--s2:#F8F9FA;--s3:#EAEDF0;
+  --t1:#0D1117;--t2:#4A5568;--t3:#A0ADB8;
+  --b2:rgba(0,0,0,.08);--bdr:rgba(200,152,26,.3);--gd:rgba(200,152,26,.08);--gg:rgba(200,152,26,.18);
+}
+body.light-mode nav{background:rgba(255,255,255,.96);}
+body.light-mode .bnav{background:#fff;}
+body.light-mode .card,body.light-mode .insight,body.light-mode .kpi,body.light-mode .mitem,body.light-mode .acard,body.light-mode .pb,body.light-mode .chbox,body.light-mode .commbox,body.light-mode .phero,body.light-mode .phero2,body.light-mode .lst,body.light-mode .sprod,body.light-mode .hay,body.light-mode .fincard,body.light-mode .gi,body.light-mode .fc,body.light-mode .ri,body.light-mode .ps,body.light-mode .irow,body.light-mode .frow,body.light-mode .csrow,body.light-mode .crow2,body.light-mode .cbbl,body.light-mode .vetc,body.light-mode .msys,body.light-mode .ma,body.light-mode .mbox{background:var(--s2);border-color:var(--b2);}
+body.light-mode .mu{background:rgba(200,152,26,.12);}
+body.light-mode .inp,body.light-mode .cta,body.light-mode .ci{background:#fff;border-color:var(--b2);color:var(--t1);}
+body.light-mode .sub,body.light-mode .scr{background:var(--bg);}
+body.light-mode .modal .mbox{background:#fff;}
+body.light-mode .chdr,body.light-mode .cbot{background:#fff;}
+body.light-mode .cbar{background:var(--s3);}
+body.light-mode .aav{background:#fff;}
+body.light-mode .limg{background:var(--s3);}
+@keyframes gp{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sh{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes dp{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.scr{display:none;min-height:100vh;}.scr.on{display:block;animation:fi .2s ease;}
+#sc-chat.on{display:flex;flex-direction:column;height:100vh;}
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:52px;display:flex;align-items:center;padding:0 20px;background:rgba(7,9,13,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--b2);}
+.nring{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:12px;color:var(--gold);margin-right:9px;animation:gp 2.5s ease infinite;}
+.ntitle{font-family:var(--fd);font-size:10px;font-weight:700;color:var(--t1);letter-spacing:2px;}
+.ntier{margin-left:auto;font-family:var(--fm);font-size:8px;color:var(--gold);padding:2px 8px;border-radius:8px;border:1px solid rgba(200,152,26,.2);margin-right:10px;}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--s1);border-top:1px solid var(--b2);display:flex;padding:7px 0 12px;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.bn-ic{font-size:18px;line-height:1;}.bn-lb{font-size:8px;color:var(--t3);font-weight:500;}
+.bn.on .bn-lb{color:var(--gold);}
+.pg{padding:60px 20px 76px;}
+.eye{font-family:var(--fm);font-size:9px;color:var(--gold);letter-spacing:3px;margin-bottom:7px;}
+.h1{font-family:var(--fd);font-size:18px;font-weight:900;color:var(--t1);line-height:1.2;}
+.card{background:var(--s2);border-radius:14px;border:1px solid var(--b2);}
+.hr{height:1px;background:var(--b2);margin:18px 0;}
+.btn{padding:13px;border-radius:12px;border:none;width:100%;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-g{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);box-shadow:0 4px 14px var(--gg);}
+.btn-g:active{transform:scale(.98);}
+.btn-o{background:transparent;border:1px solid var(--bdr);color:var(--t2);}
+.inp{width:100%;padding:13px 16px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;color:var(--t1);font-family:var(--fb);font-size:13px;outline:none;}
+.inp:focus{border-color:rgba(200,152,26,.4);}
+select.inp{-webkit-appearance:none;}
+.lbl{font-size:10px;color:var(--t2);margin-bottom:5px;display:block;}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-family:var(--fb);font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.chip.on{background:var(--gd);border-color:var(--bdr);color:var(--gold);}
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--bdr);padding:8px 16px;border-radius:20px;font-size:12px;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
+.toast.on{opacity:1;}
+.modal{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:flex-end;}
+.modal.on{display:flex;}
+.mbox{width:100%;background:var(--s1);border-radius:18px 18px 0 0;padding:20px 20px 32px;border-top:1px solid var(--b2);max-height:86vh;overflow-y:auto;animation:sh .25s cubic-bezier(.16,1,.3,1);}
+.mbar{width:32px;height:3px;border-radius:2px;background:var(--t3);margin:0 auto 16px;}
+.sub{position:fixed;inset:0;z-index:800;background:var(--bg);overflow-y:auto;padding:60px 20px 78px;display:none;}
+.sub.on{display:block;animation:fi .2s ease;}
+.back{display:flex;align-items:center;gap:7px;margin-bottom:20px;cursor:pointer;width:fit-content;}
+/* LOGIN */
+#sc-login{background:radial-gradient(ellipse at 15% 15%,rgba(200,152,26,.07),transparent 55%),var(--bg);}
+.lc{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;}
+.lomega{width:76px;height:76px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:32px;color:var(--gold);margin:0 auto 14px;box-shadow:0 0 28px var(--gg);}
+.lbox{width:100%;max-width:360px;margin-top:24px;}
+.ldiv{display:flex;align-items:center;gap:10px;margin:12px 0;}
+.lline{flex:1;height:1px;background:var(--b2);}
+.lgoog{width:100%;padding:12px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;color:var(--t2);font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;}
+/* DASHBOARD */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.kpi{padding:16px 12px;border-radius:14px;background:var(--s2);border:1px solid var(--b2);}
+.kpi-n{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--kc,var(--t1));margin-top:6px;}
+.kpi-l{font-size:9px;color:var(--t2);margin-top:2px;}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.mitem{padding:16px 10px;border-radius:14px;background:var(--s2);border:1px solid var(--b2);text-align:center;cursor:pointer;transition:all .15s;}
+.mitem:active{background:var(--gd);border-color:var(--bdr);}
+.mic{font-size:20px;margin-bottom:5px;filter:grayscale(15%);}
+.mlb{font-size:9px;color:var(--t2);font-weight:500;}
+.dalert{background:rgba(224,58,82,.07);border:1px solid rgba(224,58,82,.2);border-radius:12px;padding:11px 14px;margin-bottom:24px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;animation:bl 1s infinite;}
+.atx{font-size:11px;color:#E8607A;flex:1;line-height:1.4;}
+.insight{background:var(--s2);border-radius:13px;padding:15px;border:1px solid var(--bdr);}
+/* MONITOR */
+.acard{background:var(--s2);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;border:1px solid var(--b2);border-left:3px solid var(--sc);margin-bottom:9px;}
+.aav{width:42px;height:42px;border-radius:10px;background:var(--bg);border:1.5px solid var(--sc);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:900;color:var(--sc);flex-shrink:0;}
+.fab{position:fixed;bottom:64px;right:18px;z-index:200;padding:11px 17px;border-radius:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 5px 16px var(--gg);}
+/* HEALTH */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+.ccat{background:var(--s2);border-radius:13px;padding:14px;border:1px solid var(--b2);cursor:pointer;transition:all .12s;}
+.ccat:active,.ccat.on{background:var(--gd);border-color:var(--bdr);}
+.ssec{display:none;}.ssec.on{display:block;}
+.sg{margin-bottom:12px;}
+.sgl{font-size:10px;color:var(--t2);margin-bottom:5px;font-weight:500;}
+.sgo{display:flex;flex-wrap:wrap;gap:5px;}
+.so{padding:5px 10px;border-radius:9px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-size:10px;cursor:pointer;font-family:var(--fb);transition:all .12s;}
+.so.on{background:rgba(224,58,82,.1);border-color:var(--red);color:var(--red);}
+.ares{border-radius:13px;padding:15px;margin-top:14px;display:none;animation:fi .25s ease;}
+.ares.on{display:block;}
+.vetc{background:var(--s3);border-radius:11px;padding:11px;margin-top:11px;display:flex;align-items:center;gap:9px;border:1px solid var(--b2);}
+.bwa{padding:7px 11px;border-radius:9px;background:rgba(0,184,107,.1);color:var(--green);border:1px solid rgba(0,184,107,.2);font-size:10px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap;}
+/* MARKET */
+.phero{padding:18px;border-radius:16px;background:var(--s2);margin-bottom:14px;border:1px solid var(--bdr);}
+.p6{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.pb{background:var(--s2);border-radius:10px;padding:10px;border:1px solid var(--b2);}
+.chbox{background:var(--s2);border-radius:13px;padding:13px;margin-bottom:14px;border:1px solid var(--b2);}
+.cbars{display:flex;align-items:flex-end;gap:3px;height:48px;}
+.cbar{flex:1;border-radius:2px 2px 0 0;background:var(--s3);}
+.cbar.hi{background:linear-gradient(to top,var(--gold),var(--gold2));}
+.clbls{display:flex;gap:3px;margin-top:4px;}
+.commbox{background:var(--s2);border-radius:13px;padding:13px;border:1px solid var(--b2);}
+.cmsg{display:flex;gap:7px;margin-bottom:11px;}
+.cav2{width:26px;height:26px;border-radius:50%;background:var(--s3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.cbbl{background:var(--s3);border-radius:0 10px 10px 10px;padding:8px 10px;flex:1;}
+.cu{font-size:10px;font-weight:600;color:var(--gold);}
+.clc{font-size:8px;color:var(--t3);}
+.ct{font-size:11px;color:var(--t1);margin-top:3px;line-height:1.5;}
+.cir{display:flex;gap:6px;margin-top:9px;}
+.ci{flex:1;padding:8px 12px;background:var(--s3);border:1px solid var(--b2);border-radius:18px;color:var(--t1);font-size:12px;font-family:var(--fb);outline:none;}
+.csnd{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+/* AI CHAT */
+.chdr{padding:10px 20px;background:var(--s1);border-bottom:1px solid var(--b2);}
+.cmsgs{flex:1;overflow-y:auto;padding:13px 20px;display:flex;flex-direction:column;gap:9px;min-height:calc(100vh - 250px);max-height:calc(100vh - 250px);}
+.msys{background:linear-gradient(135deg,var(--gd),rgba(0,145,168,.05));border:1px solid var(--bdr);border-radius:13px;padding:12px;display:flex;gap:7px;}
+.omav{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:9px;color:var(--gold);background:var(--s2);flex-shrink:0;}
+.mu{background:var(--gd);border:1px solid rgba(200,152,26,.15);border-radius:13px 3px 13px 13px;padding:8px 12px;font-size:12px;color:var(--t1);align-self:flex-end;max-width:82%;}
+.marow{display:flex;gap:6px;}
+.ma{background:var(--s2);border:1px solid var(--b2);border-radius:3px 13px 13px 13px;padding:10px 12px;font-size:12px;color:var(--t1);line-height:1.6;flex:1;}
+.mtag{display:inline-block;padding:2px 6px;border-radius:5px;background:var(--gd);color:var(--gold);font-size:8px;margin-top:4px;}
+.dots{display:flex;gap:3px;}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:dp 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+.cbot{padding:9px 20px 13px;background:var(--s1);border-top:1px solid var(--b2);}
+.crow{display:flex;gap:7px;align-items:flex-end;}
+.cta{flex:1;padding:9px 14px;background:var(--s2);border:1px solid var(--b2);border-radius:18px;color:var(--t1);font-family:var(--fb);font-size:13px;outline:none;resize:none;}
+.cta:focus{border-color:rgba(200,152,26,.3);}
+.csend{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:13px;cursor:pointer;flex-shrink:0;}
+.csend:disabled{background:var(--s2);color:var(--t3);}
+/* MARKDOWN RENDER */
+.ma h1,.ma h2,.ma h3{font-family:var(--fd);color:var(--gold);margin:10px 0 5px;font-size:12px;letter-spacing:.5px;}
+.ma h4,.ma h5{color:var(--t1);margin:8px 0 4px;font-size:11px;font-weight:600;}
+.ma p{margin:5px 0;line-height:1.7;}
+.ma ul,.ma ol{padding-left:16px;margin:6px 0;}
+.ma li{margin:3px 0;line-height:1.6;}
+.ma strong{color:var(--t1);font-weight:700;}
+.ma em{color:var(--gold);font-style:normal;}
+.ma code{background:var(--s3);padding:1px 5px;border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--cyan);}
+.ma blockquote{border-left:2px solid var(--gold);padding-left:9px;margin:7px 0;color:var(--t2);font-style:italic;}
+.ma hr{border:none;border-top:1px solid var(--b2);margin:9px 0;}
+.ma table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0;}
+.ma th{background:var(--s3);color:var(--gold);padding:5px 7px;text-align:left;border:1px solid var(--b2);}
+.ma td{padding:5px 7px;border:1px solid var(--b2);color:var(--t2);}
+/* MARKDOWN RENDER */
+.ma h1,.ma h2,.ma h3{font-family:var(--fd);color:var(--gold);margin:10px 0 5px;font-size:12px;letter-spacing:.5px;}
+.ma p{margin:5px 0;line-height:1.7;}
+.ma ul,.ma ol{padding-left:16px;margin:6px 0;}
+.ma li{margin:3px 0;line-height:1.6;}
+.ma strong{color:var(--t1);font-weight:700;}
+.ma code{background:var(--s3);padding:1px 5px;border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--cyan);}
+.ma blockquote{border-left:2px solid var(--gold);padding-left:9px;margin:7px 0;color:var(--t2);}
+.ma table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0;}
+.ma th{background:var(--s3);color:var(--gold);padding:5px 7px;text-align:left;border:1px solid var(--b2);}
+.ma td{padding:5px 7px;border:1px solid var(--b2);color:var(--t2);}
+/* SUB SCREENS */
+.roinum{font-family:var(--fd);font-size:52px;font-weight:900;text-align:center;line-height:1;}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0;}
+.ri{background:var(--s2);border-radius:11px;padding:12px;border:1px solid var(--b2);}
+.wxbig{background:linear-gradient(135deg,var(--s2),var(--gd));border:1px solid var(--bdr);border-radius:16px;padding:22px;text-align:center;margin-bottom:14px;}
+.fcrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;}
+.fcrow::-webkit-scrollbar{display:none;}
+.fc{background:var(--s2);border-radius:11px;padding:10px;text-align:center;border:1px solid var(--b2);flex-shrink:0;min-width:64px;}
+.geog{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.gi{background:var(--s2);border-radius:11px;padding:12px;border:1px solid var(--b2);}
+.lst{background:var(--s2);border-radius:13px;border:1px solid var(--b2);overflow:hidden;margin-bottom:11px;}
+.limg{height:100px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:42px;position:relative;}
+.lprice{position:absolute;bottom:8px;right:10px;font-family:var(--fd);font-size:12px;font-weight:900;color:var(--green);}
+.lbody{padding:11px 13px;}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sprod{background:var(--s2);border-radius:13px;border:1px solid var(--b2);overflow:hidden;cursor:pointer;}
+.sprod:active{border-color:var(--bdr);}
+.spimg{height:82px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:34px;}
+.sp2{grid-column:span 2;}
+.hayg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.hay{background:var(--s2);border-radius:13px;padding:14px;border:1px solid var(--b2);cursor:pointer;}
+.hay:active{border-color:var(--bdr);}
+.csrow{background:var(--s2);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--b2);margin-bottom:6px;}
+.soon{padding:2px 7px;border-radius:7px;background:rgba(124,58,237,.1);color:var(--pur);font-family:var(--fm);font-size:8px;flex-shrink:0;}
+.fincard{background:var(--s2);border-radius:13px;padding:15px;border:1px solid var(--b2);margin-bottom:9px;}
+.phero2{background:linear-gradient(135deg,var(--s2),var(--gd));border:1px solid var(--bdr);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px;}
+.pav{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:22px;color:var(--bg);margin:0 auto 11px;box-shadow:0 0 16px var(--gg);}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.ps{background:var(--s2);border-radius:11px;padding:12px 8px;text-align:center;border:1px solid var(--b2);}
+.irow{background:var(--s2);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:7px;border:1px solid var(--b2);margin-bottom:6px;}
+.frow{background:var(--gd);border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:6px;border:1px solid rgba(200,152,26,.1);margin-bottom:5px;}
+.crow2{background:var(--s2);border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:7px;border:1px dashed var(--b2);margin-bottom:5px;}
+.bout{width:100%;padding:11px;border-radius:11px;border:1px solid rgba(224,58,82,.2);background:transparent;color:var(--red);font-family:var(--fb);font-size:13px;cursor:pointer;margin-top:7px;}
+</style>
+</head>
+<body>
+
+<nav id="nav" style="display:none">
+  <div class="nring">Ω</div>
+  <span class="ntitle">TERNAKOS</span>
+  <div class="ntier" id="nav-tier" onclick="OM('m-tier')" style="cursor:pointer">OMEGA</div>
+  <span onclick="OM('m-notif')" style="font-size:18px;cursor:pointer;position:relative">🔔<span id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--red);display:none"></span></span>
+</nav>
+<div class="bnav" id="bnav" style="display:none">
+  <div class="bn on" id="bn-dash" onclick="G('dash')"><div class="bn-ic">⚡</div><div class="bn-lb" style="color:var(--gold)" data-i18n="nav_dash">Dasbor</div></div>
+  <div class="bn" id="bn-mon" onclick="G('mon')"><div class="bn-ic">📡</div><div class="bn-lb" data-i18n="nav_monitor">Monitor</div></div>
+  <div class="bn" id="bn-mkt" onclick="G('mkt')"><div class="bn-ic">📈</div><div class="bn-lb" data-i18n="nav_market">Market</div></div>
+  <div class="bn" id="bn-health" onclick="G('health')"><div class="bn-ic">🩺</div><div class="bn-lb" data-i18n="nav_health">Health</div></div>
+  <div class="bn" id="bn-chat" onclick="G('chat')"><div class="bn-ic">🤖</div><div class="bn-lb" data-i18n="nav_ai">AI</div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="sc-login" class="scr on">
+  <div class="lc">
+    <div class="lomega">Ω</div>
+    <div style="text-align:center">
+      <div style="font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:3px">TERNAKOS</div>
+      <div style="font-size:11px;color:var(--gold);margin-top:4px">The Operating System for Living Ecosystems</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:4px;font-style:italic">Born in Mojosari — Built for the World</div>
+    </div>
+    <div class="lbox">
+      <div id="login-form">
+        <div style="margin-bottom:9px"><label class="lbl">Email</label><input class="inp" id="le" type="email" placeholder="peternak@email.com"></div>
+        <div style="margin-bottom:13px"><label class="lbl">Password</label><input class="inp" id="lp" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-g" onclick="doLogin()"><span data-i18n="btn_login">Masuk</span></button>
+        <div style="text-align:right;margin-top:7px"><span style="font-size:10px;color:var(--gold);cursor:pointer" onclick="doForgot()"><span data-i18n="btn_forgot">Lupa password?</span></span></div>
+        <div class="ldiv"><div class="lline"></div><div style="font-size:10px;color:var(--t3)">atau</div><div class="lline"></div></div>
+        <button class="lgoog" onclick="doGoogle()"><span style="font-size:14px;font-weight:700;color:#4285F4">G</span> Masuk dengan Google</button>
+        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--t2)">Belum punya akun? <span style="color:var(--gold);cursor:pointer" onclick="showReg()">Daftar</span></div>
+      </div>
+      <div id="reg-form" style="display:none">
+        <div style="font-family:var(--fm);font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:12px"><span data-i18n="reg_title">BUAT AKUN BARU</span></div>
+        <div style="margin-bottom:9px"><label class="lbl">Nama Lengkap</label><input class="inp" id="rn" placeholder="cth: Budi Peternak"></div>
+        <div style="margin-bottom:9px"><label class="lbl">Email</label><input class="inp" id="re" type="email" placeholder="peternak@email.com"></div>
+        <div style="margin-bottom:13px"><label class="lbl">Password (min. 6 karakter)</label><input class="inp" id="rp" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-g" onclick="doReg()"><span data-i18n="btn_register">Buat Akun</span></button>
+        <button class="btn btn-o" style="margin-top:7px" onclick="hideReg()">← Kembali ke Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="sc-dash" class="scr" style="background:radial-gradient(ellipse at 0 0,rgba(200,152,26,.05),transparent 45%),var(--bg)">
+  <div class="pg">
+    <div style="margin-bottom:22px">
+      <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);letter-spacing:.5px" id="dash-greeting">SELAMAT DATANG</div>
+      <div style="font-size:10px;color:var(--gold);margin-top:3px">Mojosari, Mojokerto</div>
+    </div>
+    <div class="dalert" onclick="G('health')">
+      <div class="adot"></div>
+      <div class="atx">Titan — Kondisi DARURAT. Tap untuk tangani.</div>
+      <span style="color:var(--t3);font-size:13px">→</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi" style="--kc:var(--green)"><div style="font-size:10px">✦</div><div class="kpi-n">4</div><div class="kpi-l">Sehat</div></div>
+      <div class="kpi" style="--kc:#D4960A"><div style="font-size:10px">⚡</div><div class="kpi-n">1</div><div class="kpi-l">Waspada</div></div>
+      <div class="kpi" style="--kc:var(--red)"><div style="font-size:10px">⚠</div><div class="kpi-n">1</div><div class="kpi-l">Darurat</div></div>
+    </div>
+    <div class="eye" data-i18n="dash_fitur">FITUR</div>
+    <div class="mgrid">
+      <div class="mitem" onclick="OS('sub-mktpl')"><div class="mic">🤝</div><div class="mlb" data-i18n="feat_marketplace">Marketplace</div></div>
+      <div class="mitem" onclick="OS('sub-ann')"><div class="mic">📐</div><div class="mlb" data-i18n="feat_annuity">Annuity ROI</div></div>
+      <div class="mitem" onclick="OS('sub-wx')"><div class="mic">🧭</div><div class="mlb" data-i18n="feat_weather">Cuaca & Geo</div></div>
+      <div class="mitem" onclick="OS('sub-store')"><div class="mic">📦</div><div class="mlb" data-i18n="feat_store">Official Store</div></div>
+      <div class="mitem" onclick="OS('sub-hay')"><div class="mic">🌱</div><div class="mlb" data-i18n="feat_hayati">Hayati</div></div>
+      <div class="mitem" onclick="OS('sub-fin')"><div class="mic">🏦</div><div class="mlb" data-i18n="feat_financial">Financial</div></div>
+      <div class="mitem" onclick="OS('sub-prf')"><div class="mic">🪪</div><div class="mlb" data-i18n="feat_profile">Profil</div></div>
+      <div class="mitem" onclick="OS('sub-settings')"><div class="mic">⚙️</div><div class="mlb" data-i18n="feat_settings">Pengaturan</div></div>
+    </div>
+    <div class="hr"></div>
+    <div class="eye" data-i18n="dash_omega_ai">OMEGA AI</div>
+    <div class="insight">
+      <div style="font-size:9px;color:var(--gold);font-weight:600;margin-bottom:6px">★ Insight Hari Ini</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.65">Harga kambing naik 1.8% mendekati puncak pre-Idul Adha. Waktu jual optimal H-21 hingga H-14. Pertimbangkan jual minggu depan jika target profit sudah tercapai.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MONITOR -->
+<div id="sc-mon" class="scr">
+  <div class="pg">
+    <div class="eye" data-i18n="mon_eye">OMNI-MONITOR</div>
+    <div class="h1" style="margin-bottom:3px">Asset Registry</div>
+    <div style="font-size:10px;color:var(--gold);margin-bottom:14px">Real-Time Livestock & Ecosystem Intelligence</div>
+    <div class="chips" id="mf" style="margin-bottom:13px">
+      <button class="chip on" onclick="FA('Semua',this)">Semua</button>
+      <button class="chip" onclick="FA('Sehat',this)">Sehat</button>
+      <button class="chip" onclick="FA('Perlu Perhatian',this)">Waspada</button>
+      <button class="chip" onclick="FA('Darurat',this)">Darurat</button>
+    </div>
+    <div id="alist"></div>
+  </div>
+  <button class="fab" onclick="OM('m-animal')">+ Daftarkan</button>
+</div>
+
+<!-- HEALTH -->
+<div id="sc-health" class="scr">
+  <div class="pg">
+    <div class="eye">HEALTH SCREENING</div>
+    <div class="h1" style="margin-bottom:3px" data-i18n="health_title">AI Diagnosis</div>
+    <div style="font-size:10px;color:var(--t2);margin-bottom:16px"><span data-i18n="health_subtitle">Pilih kategori keluhan</span></div>
+    <div id="hs1">
+      <div class="cgrid">
+        <div class="ccat" onclick="PC('dalam')"><div style="font-size:22px;margin-bottom:6px">🔴</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_dalam">Penyakit Dalam</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Lesu, tidak mau makan</div></div>
+        <div class="ccat" onclick="PC('luar')"><div style="font-size:22px;margin-bottom:6px">🟡</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_luar">Penyakit Luar</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Mata, kulit, kaki</div></div>
+        <div class="ccat" onclick="PC('cerna')"><div style="font-size:22px;margin-bottom:6px">🟠</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_cerna">Pencernaan</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Kembung, diare</div></div>
+        <div class="ccat" onclick="PC('repro')"><div style="font-size:22px;margin-bottom:6px">🔵</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_repro">Reproduksi</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Bunting, melahirkan</div></div>
+        <div class="ccat" onclick="PC('nafas')"><div style="font-size:22px;margin-bottom:6px">🟣</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_nafas">Pernafasan</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Batuk, sesak</div></div>
+        <div class="ccat" onclick="PC('nutrisi')"><div style="font-size:22px;margin-bottom:6px">⚪</div><div style="font-size:12px;font-weight:600;color:var(--t1)"><span data-i18n="cat_nutrisi">Nutrisi & Tumbuh</span></div><div style="font-size:9px;color:var(--t2);margin-top:3px">Kurus, stunting</div></div>
+      </div>
+    </div>
+    <div id="hs2" style="display:none">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+        <button onclick="BC()" style="background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:5px 10px;color:var(--t2);font-size:11px;cursor:pointer">← Kembali</button>
+        <div id="cbadge" style="padding:2px 8px;border-radius:8px;background:var(--gd);color:var(--gold);font-size:10px;font-weight:600"></div>
+      </div>
+      <div id="ss-dalam" class="ssec">
+        <div class="sg"><div class="sgl">Nafsu Makan</div><div class="sgo"><button class="so" onclick="SS(this,'nafsu','ok')">Normal</button><button class="so" onclick="SS(this,'nafsu','kurang')">Berkurang</button><button class="so" onclick="SS(this,'nafsu','tidak')">Tidak mau makan ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Keaktifan</div><div class="sgo"><button class="so" onclick="SS(this,'aktif','ok')">Aktif</button><button class="so" onclick="SS(this,'aktif','lesu')">Sedikit lesu</button><button class="so" onclick="SS(this,'aktif','sangat')">Sangat lesu</button><button class="so" onclick="SS(this,'aktif','diam')">Tidak bergerak ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Kondisi Kepala</div><div class="sgo"><button class="so" onclick="SS(this,'kepala','ok')">Tegak normal</button><button class="so" onclick="SS(this,'kepala','berat')">Mulai berat</button><button class="so" onclick="SS(this,'kepala','tidak')">Tidak bisa tegak ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Kondisi Tubuh</div><div class="sgo"><button class="so" onclick="SS(this,'tubuh','ok')">Berdiri normal</button><button class="so" onclick="SS(this,'tubuh','goyah')">Mulai goyah</button><button class="so" onclick="SS(this,'tubuh','rebah')">Menempel tanah 🚨</button></div></div>
+      </div>
+      <div id="ss-luar" class="ssec">
+        <div class="sg"><div class="sgl">Lokasi</div><div class="sgo"><button class="so" onclick="SS(this,'lok','mata')">Mata</button><button class="so" onclick="SS(this,'lok','kulit')">Kulit</button><button class="so" onclick="SS(this,'lok','kaki')">Kaki</button><button class="so" onclick="SS(this,'lok','luka')">Luka</button></div></div>
+        <div class="sg"><div class="sgl">Sudah Berapa Lama</div><div class="sgo"><button class="so" onclick="SS(this,'dur','baru')">Hari ini</button><button class="so" onclick="SS(this,'dur','23')">2-3 hari</button><button class="so" onclick="SS(this,'dur','minggu')">Seminggu+</button></div></div>
+      </div>
+      <div id="ss-cerna" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi Perut</div><div class="sgo"><button class="so" onclick="SS(this,'perut','ok')">Normal</button><button class="so" onclick="SS(this,'perut','kembung')">Kembung ⚠</button><button class="so" onclick="SS(this,'perut','keras')">Keras</button></div></div>
+        <div class="sg"><div class="sgl">Kotoran</div><div class="sgo"><button class="so" onclick="SS(this,'kot','ok')">Normal</button><button class="so" onclick="SS(this,'kot','cair')">Diare</button><button class="so" onclick="SS(this,'kot','darah')">Berdarah ⚠</button></div></div>
+      </div>
+      <div id="ss-repro" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi</div><div class="sgo"><button class="so" onclick="SS(this,'repro','bunting')">Sedang bunting</button><button class="so" onclick="SS(this,'repro','lahir')">Baru melahirkan</button><button class="so" onclick="SS(this,'repro','masalah')">Masalah kawin</button></div></div>
+      </div>
+      <div id="ss-nafas" class="ssec">
+        <div class="sg"><div class="sgl">Pola Nafas</div><div class="sgo"><button class="so" onclick="SS(this,'nafas','ok')">Normal</button><button class="so" onclick="SS(this,'nafas','cepat')">Cepat</button><button class="so" onclick="SS(this,'nafas','berat')">Berat/sesak ⚠</button></div></div>
+      </div>
+      <div id="ss-nutrisi" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi Fisik</div><div class="sgo"><button class="so" onclick="SS(this,'fisik','ok')">Normal</button><button class="so" onclick="SS(this,'fisik','kurus')">Kurus</button><button class="so" onclick="SS(this,'fisik','kusam')">Kusam</button><button class="so" onclick="SS(this,'fisik','lambat')">Lambat tumbuh</button></div></div>
+      </div>
+      <div id="omega-detail-box" style="display:none;margin-top:12px">
+        <div style="font-size:10px;color:var(--gold);font-weight:600;margin-bottom:5px">🔬 OMEGA — Ceritakan detail kondisi hewan kamu</div>
+        <textarea class="inp" id="omega-detail" rows="3" placeholder="Contoh: Sapi jantan 3 tahun, sudah tidak mau makan 2 hari, terlihat lemas, perut sebelah kiri kembung, feses encer kehijauan, suhu tubuh terasa panas..." style="resize:none;line-height:1.6;font-size:12px"></textarea>
+      </div>
+      <button class="btn btn-g" style="margin-top:14px" onclick="AZ()"><span data-i18n="btn_analyze">Analisa AI</span></button>
+      <div id="ares" class="ares">
+        <div style="font-family:var(--fd);font-size:15px;font-weight:900;margin-bottom:7px" id="alv"></div>
+        <div id="aadv" style="font-size:12px;line-height:1.65;color:var(--t2)"></div>
+        <div id="vsec" style="display:none;margin-top:11px">
+          <div style="font-size:10px;color:var(--t2);margin-bottom:6px">🏥 Dokter Terdekat</div>
+          <div class="vetc">
+            <div style="font-size:19px">👨‍⚕️</div>
+            <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t1)">drh. Budi Santoso</div><div style="font-size:10px;color:var(--gold)">📍 2.3 km · Klinik Hewan Mojosari</div></div>
+            <button class="bwa" onclick="window.open('https://wa.me/6281234567890','_blank')">WA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKET -->
+<div id="sc-mkt" class="scr">
+  <div class="pg">
+    <div class="eye" data-i18n="mkt_eye">MARKET INTELLIGENCE</div>
+    <div class="h1" style="margin-bottom:14px">Global Trade Data</div>
+    <div class="phero">
+      <div style="font-size:10px;color:var(--t2);margin-bottom:3px">Indeks Harga Ternak Nasional</div>
+      <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--green)">Rp 45.280/kg</div>
+      <div style="font-size:10px;color:var(--green);margin-top:2px">↑ +2.4% dari kemarin</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:4px">Sumber: BPS · Kementan RI · FAO · World Bank</div>
+    </div>
+    <div class="p6">
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐄 Sapi</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 48.2rb</div><div style="font-size:9px;color:var(--green)">↑ +3.2%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐐 Kambing</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 38.5rb</div><div style="font-size:9px;color:var(--green)">↑ +1.8%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐑 Domba</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 35.8rb</div><div style="font-size:9px;color:var(--red)">↓ -0.3%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐔 Ayam</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 28rb</div><div style="font-size:9px;color:var(--red)">↓ -0.5%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐟 Lele</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 18.5rb</div><div style="font-size:9px;color:var(--green)">↑ +0.8%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🌶 Cabai</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 42rb</div><div style="font-size:9px;color:var(--green)">↑ +5.1%</div></div>
+    </div>
+    <div class="chbox">
+      <div style="font-size:11px;font-weight:600;color:var(--t1);margin-bottom:9px">Tren Harga Kambing — 7 Hari</div>
+      <div class="cbars" id="cbars"></div>
+      <div class="clbls" id="clbls"></div>
+      <div style="font-size:8px;color:var(--t3);margin-top:5px">Sumber: BPS, Kementan RI, FAO</div>
+    </div>
+    <div class="eye">CHAT KOMUNITAS 🌐</div>
+    <div class="commbox">
+      <div id="cmsgs">
+        <div class="cmsg"><div class="cav2">👨‍🌾</div><div class="cbbl"><div class="cu">H. Budi · Mojokerto</div><div class="clc">🇮🇩 · 2 mnt lalu</div><div class="ct">Harga kambing Mojosari hari ini Rp 38rb/kg. Naik dari kemarin.</div></div></div>
+        <div class="cmsg"><div class="cav2">👨‍🌾</div><div class="cbbl"><div class="cu">Ahmad · Lumajang</div><div class="clc">🇮🇩 · 15 mnt lalu</div><div class="ct">Di Lumajang juga naik. Stok menipis. Timing jual sekarang bagus.</div></div></div>
+        <div class="cmsg"><div class="cav2">🧑‍🌾</div><div class="cbbl"><div class="cu">Rahmat · Malaysia</div><div class="clc">🇲🇾 · 1 jam — 🌐 Auto-translated</div><div class="ct">Harga naik menjelang Aidiladha. Ada yang bisa supply ke Malaysia?</div></div></div>
+      </div>
+      <div class="cir">
+        <input class="ci" id="cinp" placeholder="Tulis pesan... 🌐 auto-translate" onkeydown="if(event.key==='Enter')doSendComm()">
+        <button class="csnd" onclick="doSendComm()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI CHAT -->
+<div id="sc-chat" class="scr">
+  <div style="padding-top:52px;display:flex;flex-direction:column;height:100vh">
+    <div class="chdr">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+        <div>
+          <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1)"><span data-i18n="ai_title">OMEGA INTELLIGENCE</span></div>
+          <div style="font-size:9px;color:var(--gold);margin-top:1px">AI Konsultan Ekosistem Hayati · 24/7</div>
+        </div>
+        <div style="font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:bl 1.2s infinite"></span>ONLINE</div>
+      </div>
+      <div class="chips" id="tchips">
+        <button class="chip on" onclick="ST('Umum',this)">Umum</button>
+        <button class="chip" onclick="ST('Kesehatan',this)">🏥 Kesehatan</button>
+        <button class="chip" onclick="ST('Pakan',this)">🌿 Pakan</button>
+        <button class="chip" onclick="ST('Pasar',this)">📈 Pasar</button>
+        <button class="chip" onclick="ST('Tanaman',this)">🌾 Tanaman</button>
+        <button class="chip" onclick="ST('Breeding',this)">🧬 Breeding</button>
+      </div>
+    </div>
+    <div class="cmsgs" id="cmsgs2">
+      <div class="msys">
+        <div class="omav">Ω</div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.6">Selamat datang di <b>Omega Intelligence</b>! Saya AI konsultan ekosistem hayati TernakOS — ahli di ternak, unggas, aquaculture, pertanian, dan semua yang dibudidayakan manusia. 🐄🌾🐟</div>
+      </div>
+      <div id="sqchips" style="display:flex;flex-wrap:wrap;gap:5px">
+        <button onclick="SQ('Sapi saya tidak mau makan sejak siang, apa penyebabnya?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Sapi tidak mau makan</button>
+        <button onclick="SQ('Timing terbaik jual kambing menjelang idul adha?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Timing jual idul adha</button>
+        <button onclick="SQ('Cara mencegah PMK pada sapi?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Cegah PMK</button>
+        <button onclick="SQ('Waktu tanam cabai optimal di Jawa Timur?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Tanam cabai</button>
+      </div>
+    </div>
+    <div class="cbot">
+      <div class="crow">
+        <textarea class="cta" id="ctinp" placeholder="Tanya Omega AI..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();SM()}"></textarea>
+        <button class="csend" id="csend" onclick="SM()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUB: MARKETPLACE -->
+<div id="sub-mktpl" class="sub">
+  <div class="back" onclick="CS('sub-mktpl')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">MARKETPLACE</div>
+  <div class="h1" style="margin-bottom:3px">Jual Beli Ternak</div>
+  <div style="font-size:10px;color:var(--green);margin-bottom:13px">Escrow Protected · Verified</div>
+  <div class="chips" id="mktf" style="margin-bottom:13px">
+    <button class="chip on" onclick="FM('Semua',this)">Semua</button>
+    <button class="chip" onclick="FM('Sapi',this)">🐄 Sapi</button>
+    <button class="chip" onclick="FM('Kambing',this)">🐐 Kambing</button>
+    <button class="chip" onclick="FM('Tersedia',this)">✅ Tersedia</button>
+  </div>
+  <div id="lgrid"></div>
+  <div style="height:14px"></div>
+  <button class="btn btn-g" onclick="OM('m-sell')">+ Jual Hewan</button>
+</div>
+
+<!-- SUB: ANNUITY -->
+<div id="sub-ann" class="sub">
+  <div class="back" onclick="CS('sub-ann')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye" data-i18n="ann_eye">SMART ANNUITY OPTIMIZER</div>
+  <div class="h1" style="margin-bottom:3px">Kalkulasi ROI</div>
+  <div style="font-size:10px;color:var(--pur);margin-bottom:18px">Khusus PRO · EXCLUSIVE · OMEGA</div>
+
+  <!-- Input Cards -->
+  <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:14px;padding:16px;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--gold);font-weight:600;margin-bottom:12px;letter-spacing:1px">MODAL & TARGET</div>
+    <div style="margin-bottom:10px">
+      <label class="lbl">💰 Modal Beli (Rp) — Wajib</label>
+      <input class="inp" id="am" type="number" placeholder="cth: 25000000">
+    </div>
+    <div>
+      <label class="lbl">🎯 Target Harga Jual (Rp) — Wajib</label>
+      <input class="inp" id="at" type="number" placeholder="cth: 35000000">
+    </div>
+  </div>
+
+  <div style="background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:16px;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--t2);font-weight:600;margin-bottom:12px;letter-spacing:1px">BIAYA OPERASIONAL (Opsional)</div>
+    <div style="margin-bottom:10px">
+      <label class="lbl">🌾 Biaya Pakan/Bulan (Rp)</label>
+      <input class="inp" id="ap" type="number" placeholder="cth: 1500000">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      <div><label class="lbl">📅 Bulan ke Jual</label><input class="inp" id="ab" type="number" placeholder="Default: 6"></div>
+      <div><label class="lbl">📈 Inflasi Pakan %</label><input class="inp" id="ai2" type="number" placeholder="Default: 5"></div>
+    </div>
+  </div>
+
+  <!-- Jenis Komoditas -->
+  <div style="margin-bottom:14px">
+    <label class="lbl">🐄 Jenis Komoditas (untuk analisa AI)</label>
+    <select class="inp" id="ann-komoditas">
+      <option value="">— Pilih komoditas —</option>
+      <option value="Sapi Limosin">🐄 Sapi Limosin</option>
+      <option value="Sapi Brahman">🐄 Sapi Brahman</option>
+      <option value="Kambing Etawa">🐐 Kambing Etawa</option>
+      <option value="Kambing Boer">🐐 Kambing Boer</option>
+      <option value="Domba Merino">🐑 Domba Merino</option>
+      <option value="Ayam Broiler">🐔 Ayam Broiler</option>
+      <option value="Ayam Petelur">🥚 Ayam Petelur</option>
+      <option value="Ikan Lele">🐟 Ikan Lele</option>
+      <option value="Udang Vaname">🦐 Udang Vaname</option>
+      <option value="Cabai Merah">🌶 Cabai Merah</option>
+      <option value="Padi">🌾 Padi</option>
+    </select>
+  </div>
+
+  <button class="btn btn-g" onclick="ROI()" style="font-size:14px;padding:15px">⚡ Hitung ROI + Analisa AI</button>
+
+  <!-- Result -->
+  <div id="rres" style="display:none;margin-top:20px">
+    <!-- ROI Big Number -->
+    <div style="background:linear-gradient(135deg,var(--s2),var(--gd));border:1px solid var(--bdr);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--t2);margin-bottom:4px">Return on Investment</div>
+      <div class="roinum" id="rpct" style="font-size:56px"></div>
+      <div style="font-size:13px;margin-top:6px" id="rdesc"></div>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="rg" style="margin-bottom:14px">
+      <div class="ri">
+        <div style="font-size:9px;color:var(--t2);margin-bottom:4px">💸 Total Modal</div>
+        <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--red)" id="rmod"></div>
+      </div>
+      <div class="ri">
+        <div style="font-size:9px;color:var(--t2);margin-bottom:4px">✅ Profit Bersih</div>
+        <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--green)" id="rprf"></div>
+      </div>
+      <div class="ri">
+        <div style="font-size:9px;color:var(--t2);margin-bottom:4px">📅 Profit/Bulan</div>
+        <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--cyan)" id="rmon"></div>
+      </div>
+      <div class="ri">
+        <div style="font-size:9px;color:var(--t2);margin-bottom:4px">⏱ Payback Period</div>
+        <div style="font-family:var(--fm);font-size:14px;font-weight:700;color:var(--pur)" id="rpay"></div>
+      </div>
+    </div>
+
+    <!-- AI Recommendation -->
+    <div style="background:linear-gradient(135deg,var(--s2),rgba(0,145,168,.05));border:1px solid var(--bdr);border-radius:13px;padding:15px">
+      <div style="font-size:9px;color:var(--gold);font-weight:600;margin-bottom:8px;letter-spacing:1px">★ REKOMENDASI OMEGA INTELLIGENCE</div>
+      <div id="rrec" style="font-size:12px;color:var(--t2);line-height:1.7">
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- SUB: WEATHER -->
+<div id="sub-wx" class="sub">
+  <div class="back" onclick="CS('sub-wx')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye" data-i18n="wx_eye">WEATHER & GEO INTELLIGENCE</div>
+
+  <!-- Current Weather -->
+  <div class="wxbig" id="wx-main">
+    <div style="font-family:var(--fd);font-size:52px;font-weight:900;color:var(--t1)" id="wx-temp">--°C</div>
+    <div style="font-size:12px;color:var(--t2);margin-top:3px" id="wx-desc">Memuat cuaca real...</div>
+    <div style="display:flex;justify-content:center;gap:14px;margin-top:8px">
+      <span style="font-size:10px;color:var(--t2)" id="wx-feels">Terasa --°C</span>
+      <span style="font-size:10px;color:var(--t2)" id="wx-wind">💨 -- km/j</span>
+    </div>
+    <div style="font-size:10px;color:var(--gold);margin-top:6px" id="wx-loc">📍 Mojosari, Mojokerto</div>
+  </div>
+
+  <!-- 5-Day Forecast -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">PRAKIRAAN 5 HARI <span id="forecast-tier-badge" style="font-size:8px;color:var(--pur);background:rgba(124,58,237,.1);padding:2px 6px;border-radius:5px;margin-left:4px">OMEGA</span></div>
+  <div id="forecast-locked" style="display:none;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2);border-radius:11px;padding:14px;text-align:center;margin-bottom:14px">
+    <div style="font-size:11px;color:var(--pur)">🔒 Prakiraan 5 hari eksklusif untuk tier OMEGA</div>
+    <button onclick="OM('m-tier')" style="margin-top:8px;padding:6px 14px;border-radius:8px;background:rgba(124,58,237,.2);color:var(--pur);border:1px solid rgba(124,58,237,.3);font-size:10px;cursor:pointer">Upgrade ke OMEGA</button>
+  </div>
+  <div class="fcrow" id="wx-forecast" style="margin-bottom:14px">
+    <div class="fc"><div style="font-size:9px;color:var(--t2)">Memuat...</div><div style="font-size:19px;margin:4px 0">⛅</div><div style="font-size:11px;font-weight:600">--°C</div></div>
+  </div>
+
+  <!-- AI Weather Analysis -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">ANALISA AI CUACA & PERTANIAN</div>
+  <div id="wx-ai-box" style="background:var(--s2);border:1px solid var(--bdr);border-radius:13px;padding:13px;margin-bottom:14px">
+    <div id="wx-ai-content" style="font-size:11px;color:var(--t2);line-height:1.7">
+      <div class="dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- Geo Intelligence -->
+  <div class="eye" data-i18n="geo_eye">GEO INTELLIGENCE</div>
+  <div id="geo-locked" style="display:none;background:rgba(224,58,82,.07);border:1px solid rgba(224,58,82,.2);border-radius:13px;padding:20px;text-align:center;margin-bottom:14px">
+    <div style="font-size:28px;margin-bottom:8px">🔒</div>
+    <div style="font-size:13px;font-weight:600;color:var(--t1)">Geo Intelligence Terkunci</div>
+    <div style="font-size:11px;color:var(--t2);margin-top:5px">Upgrade ke PRO atau lebih tinggi untuk mengakses data geografis lokasi kamu.</div>
+    <button onclick="OM('m-tier')" style="margin-top:12px;padding:8px 18px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:11px;font-weight:600;cursor:pointer">Upgrade Sekarang</button>
+  </div>
+  <div class="geog" id="geo-content">
+    <div class="gi" id="geo-topo">
+      <div style="font-size:18px;margin-bottom:5px">🏔</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Topografi</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px" id="geo-topo-basic">Dataran rendah · 25 mdpl</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px;display:none" id="geo-topo-full">Dataran rendah · 25 mdpl · Lembah Sungai Brantas · Tanah aluvial subur</div>
+    </div>
+    <div class="gi" id="geo-air">
+      <div style="font-size:18px;margin-bottom:5px">💧</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Sumber Air</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px" id="geo-air-basic">Sungai Brantas 1.2 km</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px;display:none" id="geo-air-full">Sungai Brantas 1.2 km · Irigasi teknis tersedia · Kualitas air baik untuk irigasi</div>
+    </div>
+    <div class="gi" id="geo-risk">
+      <div style="font-size:18px;margin-bottom:5px">⚠️</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Risiko Bencana</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px" id="geo-risk-basic">Banjir: Rendah</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px;display:none" id="geo-risk-full">Banjir: Rendah · Longsor: Sangat Rendah · Gempa: Zona II · Periode aman: April–Oktober</div>
+    </div>
+    <div class="gi" id="geo-wabah">
+      <div style="font-size:18px;margin-bottom:5px">🦠</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Wabah Regional</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px" id="geo-wabah-basic">Tidak ada dalam 50km</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px;display:none" id="geo-wabah-full">Tidak ada laporan PMK/LSD/AI dalam radius 50km · Update terakhir: hari ini · Sumber: Disnak Jatim</div>
+    </div>
+    <div class="gi" id="geo-tanam">
+      <div style="font-size:18px;margin-bottom:5px">🌾</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Kesesuaian Tanaman</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px" id="geo-tanam-basic">Padi, jagung, cabai</div>
+      <div style="font-size:10px;color:var(--t2);margin-top:3px;display:none" id="geo-tanam-full">Optimal: padi, jagung, cabai, bawang merah, tebu · Musim tanam ideal: Okt–Mar · pH tanah 6.2–7.1</div>
+    </div>
+    <div class="gi" id="geo-udara">
+      <div style="font-size:18px;margin-bottom:5px">💨</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Kualitas Udara</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px" id="geo-udara-basic">AQI 42 — Baik</div>
+      <div style="font-size:10px;color:var(--green);margin-top:3px;display:none" id="geo-udara-full">AQI 42 — Baik · PM2.5: 8 µg/m³ · Cocok aktivitas luar & kandang terbuka · Visibilitas: 10km</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUB: STORE -->
+<div id="sub-store" class="sub">
+  <div class="back" onclick="CS('sub-store')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">OFFICIAL STORE</div>
+  <div class="h1" style="margin-bottom:3px">Produk TernakOS</div>
+  <div style="font-size:10px;color:var(--gold);margin-bottom:13px">Hardware Resmi · Terintegrasi App</div>
+  <div class="stgrid">
+    <div class="sprod" onclick="T('QR-Omega Ear Tag — Rp 150.000/10 pcs')"><div class="spimg">🏷️</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">QR-Omega Ear Tag</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 150rb/10pcs</div><div style="font-size:9px;color:var(--t2)">Scan = profil instan</div></div></div>
+    <div class="sprod" onclick="T('Measure Tape — Rp 35.000')"><div class="spimg">📏</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Measure Tape</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 35rb</div><div style="font-size:9px;color:var(--t2)">Estimasi berat akurat</div></div></div>
+    <div class="sprod" onclick="T('Transit Tag — Rp 175.000/5 pcs')"><div class="spimg">🚚</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Transit Tag</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 175rb/5pcs</div><div style="font-size:9px;color:var(--t2)">Khusus hewan transit</div></div></div>
+    <div class="sprod" onclick="T('Nutrisi Block — Rp 45.000')"><div class="spimg">🧊</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Nutrisi Block</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 45rb</div><div style="font-size:9px;color:var(--t2)">QR aktivasi jadwal nutrisi</div></div></div>
+    <div class="sprod sp2" onclick="T('Premium Kit — Rp 449.000')"><div style="display:flex;align-items:center;gap:12px;padding:13px"><div style="font-size:30px">🎁</div><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Premium Kit</div><div style="font-family:var(--fm);font-size:13px;color:var(--gold)">Rp 449rb</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Starter Kit + 5 block + 1 bln PRO gratis</div></div></div></div>
+  </div>
+</div>
+
+<!-- SUB: HAYATI -->
+<div id="sub-hay" class="sub">
+  <div class="back" onclick="CS('sub-hay')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">EKOSISTEM HAYATI</div>
+  <div class="h1" style="margin-bottom:3px">Semua Yang Dibudidayakan</div>
+  <div style="font-size:10px;color:var(--cyan);margin-bottom:13px">From Farm to the World</div>
+  <div class="hayg">
+    <div class="hay" onclick="T('Modul Tanaman Pangan')"><div style="font-size:24px;margin-bottom:6px">🌾</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Tanaman Pangan</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Padi, Jagung, Kedelai</div></div>
+    <div class="hay" onclick="T('Modul Hortikultura')"><div style="font-size:24px;margin-bottom:6px">🌶</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Hortikultura</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Cabai, Tomat, Bawang</div></div>
+    <div class="hay" onclick="T('Modul Perkebunan')"><div style="font-size:24px;margin-bottom:6px">🌴</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Perkebunan</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Kopi, Kakao, Sawit</div></div>
+    <div class="hay" onclick="T('Modul Aquaculture')"><div style="font-size:24px;margin-bottom:6px">🐟</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Aquaculture</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Lele, Nila, Udang</div></div>
+    <div class="hay" onclick="T('Modul Insekta')"><div style="font-size:24px;margin-bottom:6px">🐝</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Insekta & Koloni</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Lebah, Ulat, Maggot</div></div>
+    <div class="hay" onclick="T('Modul Tanaman Obat')"><div style="font-size:24px;margin-bottom:6px">🌿</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Tanaman Obat</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Jahe, Kunyit, Temulawak</div></div>
+  </div>
+  <div class="eye" style="color:var(--pur)">COMING SOON</div>
+  <div class="csrow"><span style="font-size:16px">🛰</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Satellite Weather Intelligence</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Prediksi cuaca hyperlokal per desa</div></div><span class="soon">Q3 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">🧬</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">AI Genetic Mapping</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Analisis silsilah breeding optimal</div></div><span class="soon">Q4 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">⛓</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Blockchain Certificate</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Sertifikat kepemilikan global</div></div><span class="soon">Q4 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">🌍</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Global Food Trade Facilitator</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Fasilitasi ekspor-impor global</div></div><span class="soon">2027</span></div>
+</div>
+
+<!-- SUB: FINANCIAL -->
+<div id="sub-fin" class="sub">
+  <div class="back" onclick="CS('sub-fin')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">FINANCIAL HUB</div>
+  <div class="h1" style="margin-bottom:13px">Asuransi & Modal</div>
+  <div class="fincard"><div style="font-size:20px;margin-bottom:7px">🛡️</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Asuransi Ternak</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">Klaim via foto langsung dari app. Partner: Jasindo Agri, Askrindo.</div><button class="btn btn-o" style="margin-top:11px" onclick="T('Aktif setelah verifikasi KTP')">Daftar Asuransi</button></div>
+  <div class="fincard"><div style="font-size:20px;margin-bottom:7px">💳</div><div style="font-size:13px;font-weight:600;color:var(--t1)">KUR & Pinjaman Modal</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">Data riwayat ternak TernakOS jadi lampiran pengajuan KUR BRI, BNI, Mandiri.</div><button class="btn btn-o" style="margin-top:11px" onclick="T('Aktif setelah verifikasi KTP')">Ajukan KUR</button></div>
+  <div class="fincard" style="border:1px dashed var(--b2)"><div style="font-size:20px;margin-bottom:7px">🌍</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Global Finance</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">ADB, IFC World Bank, IFAD — akses modal internasional peternak ASEAN.</div><div class="soon" style="margin-top:8px;display:inline-block">COMING 2027</div></div>
+</div>
+
+<!-- SUB: PROFILE -->
+<div id="sub-prf" class="sub">
+  <div class="back" onclick="CS('sub-prf')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="phero2">
+    <div class="pav">Ω</div>
+    <div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--t1)" id="prf-name">RISS PETERNAK</div>
+    <div style="font-size:10px;color:var(--t2);margin-top:2px" id="prf-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bfcdd6ccccffcbdacdd1ded4d0cc91d6db">[email&#160;protected]</a></div>
+    <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 13px;border-radius:18px;margin-top:9px;background:var(--gd);border:1px solid var(--bdr);font-family:var(--fd);font-size:9px;font-weight:700;color:var(--gold);letter-spacing:1.5px">★ OMEGA · Rp 499.000/bln</div>
+  </div>
+  <div class="pstats">
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--cyan)" id="prf-hewan">6</div><div style="font-size:8px;color:var(--t2);margin-top:2px">Hewan</div></div>
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--green)">3</div><div style="font-size:8px;color:var(--t2);margin-top:2px">Listing</div></div>
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--pur)">8</div><div style="font-size:8px;color:var(--t2);margin-top:2px">ROI Calc</div></div>
+  </div>
+  <div style="margin-bottom:14px">
+    <div class="irow"><span style="font-size:13px">📍</span><span style="font-size:11px;color:var(--t2);flex:1">Lokasi</span><span style="font-size:11px;color:var(--t1);font-weight:500">Mojosari, Mojokerto</span></div>
+    <div class="irow"><span style="font-size:13px">📅</span><span style="font-size:11px;color:var(--t2);flex:1">Bergabung</span><span style="font-size:11px;color:var(--t1);font-weight:500">Maret 2026</span></div>
+    <div class="irow"><span style="font-size:13px">✅</span><span style="font-size:11px;color:var(--t2);flex:1">Status</span><span style="font-size:11px;color:var(--green);font-weight:500">Aktif & Terverifikasi</span></div>
+  </div>
+  <div class="eye" data-i18n="prf_omega_eye">FITUR OMEGA</div>
+  <div style="margin-bottom:13px">
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Asset tracking unlimited + QR Tag wajib backup</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">AI Chat unlimited + dokter hewan 24/7</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Health Screening unlimited + GPS dokter terdekat</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Genetic Legacy Score + Life Intelligence Report</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Weather & Geo 14 hari + satellite data</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Diskon hardware 50% + 5 QR Tag gratis/bulan</span></div>
+  </div>
+  <div class="eye" style="color:var(--pur)">COMING SOON</div>
+  <div style="margin-bottom:14px">
+    <div class="crow2"><span style="font-size:15px">🔬</span><span style="font-size:10px;color:var(--t1);flex:1">AI Biometric Scanner</span><span class="soon">Q4 2026</span></div>
+    <div class="crow2"><span style="font-size:15px">⛓</span><span style="font-size:10px;color:var(--t1);flex:1">Blockchain Certificate</span><span class="soon">Q4 2026</span></div>
+    <div class="crow2"><span style="font-size:15px">🤖</span><span style="font-size:10px;color:var(--t1);flex:1">Autonomous Market Agent</span><span class="soon">2027</span></div>
+  </div>
+  <!-- EDIT PROFIL - collapsed by default -->
+  <button onclick="toggleEditPrf()" id="prf-edit-toggle" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--bdr);background:var(--gd);color:var(--gold);font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:9px;text-align:left"><span data-i18n="btn_edit_profile">✏️ Edit Profil</span></button>
+  <div id="prf-edit-panel" style="display:none;margin-bottom:16px">
+    <div style="margin-bottom:8px">
+      <label class="lbl">Nama Tampilan</label>
+      <div style="display:flex;gap:7px">
+        <input class="inp" id="prf-edit-name" placeholder="Nama baru...">
+        <button onclick="saveProfileName()" style="padding:10px 14px;border-radius:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Simpan</button>
+      </div>
+    </div>
+    <div style="margin-bottom:4px">
+      <label class="lbl">Nomor WhatsApp</label>
+      <div style="display:flex;gap:7px">
+        <input class="inp" id="prf-edit-wa" type="tel" placeholder="628xxxxxxxxx">
+        <button onclick="saveProfileWA()" style="padding:10px 14px;border-radius:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Simpan</button>
+      </div>
+    </div>
+    <div style="margin-bottom:8px">
+      <label class="lbl">Foto Profil</label>
+      <button onclick="document.getElementById('prf-photo-input').click()" style="width:100%;padding:10px;border-radius:11px;border:1px dashed var(--bdr);background:transparent;color:var(--gold);font-size:12px;cursor:pointer">📷 Pilih Foto dari Galeri</button>
+      <input type="file" id="prf-photo-input" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
+    </div>
+  </div>
+  <button class="bout" onclick="doLogout()"><span data-i18n="btn_logout">Keluar dari Akun</span></button>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="m-animal" onclick="if(event.target.id==='m-animal')CM('m-animal')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);margin-bottom:14px">Daftarkan Hewan / Tanaman</div>
+    <div style="margin-bottom:8px"><label class="lbl">Nama / Kode</label><input class="inp" id="nn" placeholder="cth: Sultan / KMB-001"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+      <div><label class="lbl">Spesies</label><select class="inp" id="ns"><option>Sapi Limosin</option><option>Sapi Brahman</option><option>Kambing Etawa</option><option>Kambing Boer</option><option>Domba Merino</option><option>Ayam Broiler</option><option>Bebek</option><option>Ikan Lele</option><option>Udang</option><option>Padi</option><option>Jagung</option><option>Cabai</option></select></div>
+      <div><label class="lbl">Kelamin</label><select class="inp" id="ng"><option>Jantan</option><option>Betina</option><option>Tidak diketahui</option></select></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Fase Hidup</label>
+      <select class="inp" id="nf">
+        <option>🥚 Embrio/Telur</option><option>🐣 Neonatal — Baru lahir</option><option>🐥 Anakan — Sudah lepas induk</option><option>🐄 Remaja — Belum kawin</option><option>⭐ Dewasa Produktif</option><option>🤰 Sedang Bunting</option><option>📉 Produktivitas Menurun</option><option>🏁 Siap Afkir</option>
+      </select>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Lokasi</label><input class="inp" id="nl" placeholder="Desa/Kecamatan/Kota"></div>
+    <div style="margin-bottom:14px"><label class="lbl">Status Kesehatan</label><select class="inp" id="nst"><option>Sehat</option><option>Perlu Perhatian</option><option>Darurat</option></select></div>
+    <button class="btn btn-g" onclick="AddA()">Simpan & Generate QR Tag</button>
+    <button class="btn btn-o" style="margin-top:7px" onclick="CM('m-animal')">Batal</button>
+  </div>
+</div>
+
+<div class="modal" id="m-sell" onclick="if(event.target.id==='m-sell')CM('m-sell')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);margin-bottom:14px">Jual Hewan / Hasil Tani</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+      <div><label class="lbl">Kategori</label><select class="inp" id="sk"><option>Ternak</option><option>Unggas</option><option>Aquaculture</option><option>Hasil Tani</option></select></div>
+      <div><label class="lbl">Spesies</label><input class="inp" id="ss2" placeholder="Kambing Etawa"></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Harga (Rp)</label><input class="inp" id="sh" type="number" placeholder="3500000"></div>
+    <div style="margin-bottom:8px"><label class="lbl">Lokasi</label><input class="inp" id="sl" placeholder="Mojosari, Mojokerto"></div>
+    <div style="margin-bottom:8px"><label class="lbl">WhatsApp</label><input class="inp" id="sw" type="number" placeholder="628xxx"></div>
+    <div style="margin-bottom:14px"><label class="lbl">Deskripsi</label><input class="inp" id="sd" placeholder="Kondisi, keunggulan..."></div>
+    <button class="btn btn-g" style="background:linear-gradient(135deg,var(--green),#00E090);color:var(--bg)" onclick="AddL()">Posting Sekarang</button>
+    <button class="btn btn-o" style="margin-top:7px" onclick="CM('m-sell')">Batal</button>
+  </div>
+</div>
+
+<div class="toast" id="toastel"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── OPENAI KEY ──
+// AI uses /api/chat - no key needed here
+
+// ── FIREBASE INIT ──
+firebase.initializeApp({
+  apiKey: "AIzaSyB6x0IRo2WME4_FjqGI2z93SH4us9JXaD0",
+  authDomain: "ternakos.firebaseapp.com",
+  projectId: "ternakos",
+  storageBucket: "ternakos.firebasestorage.app",
+  messagingSenderId: "1071749535862",
+  appId: "1:1071749535862:web:2c48b8106d177281c2e757"
+});
+var auth = firebase.auth();
+var db = firebase.firestore();
+
+// ── AUTH STATE ──
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    window.currentUser = user;
+    document.getElementById('nav').style.display = 'flex';
+    document.getElementById('bnav').style.display = 'flex';
+    var name = user.displayName ? user.displayName.split(' ')[0].toUpperCase() : user.email.split('@')[0].toUpperCase();
+    document.getElementById('dash-greeting').textContent = 'SELAMAT DATANG, ' + name;
+    document.getElementById('prf-name').textContent = user.displayName || name;
+    updateSettingsDisplay(user);
+    document.getElementById('prf-email').textContent = user.email;
+    loadProfileWA(user.uid);
+    loadProfilePhoto(user.uid);
+    var al = document.getElementById('prf-avatar-letter'); if (al) al.textContent = name[0];
+    loadAnimals(user.uid);
+    if (document.getElementById('sc-login').classList.contains('on')) {
+      document.getElementById('sc-login').classList.remove('on');
+      G('dash');
+    }
+  } else {
+    window.currentUser = null;
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('bnav').style.display = 'none';
+  }
+});
+
+// ── AUTH FUNCTIONS ──
+function doLogin() {
+  var email = document.getElementById('le').value;
+  var pass = document.getElementById('lp').value;
+  if (!email || !pass) { T('Isi email dan password dulu!'); return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(function(e) {
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') T('Email atau password salah');
+      else if (e.code === 'auth/invalid-email') T('Format email tidak valid');
+      else T('Login gagal: ' + e.message);
+    });
+}
+
+function doGoogle() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .catch(function() { T('Login Google gagal. Coba lagi.'); });
+}
+
+function doForgot() {
+  var email = document.getElementById('le').value;
+  if (!email) { T('Isi email dulu!'); return; }
+  auth.sendPasswordResetEmail(email)
+    .then(function() { T('Link reset dikirim ke email!'); })
+    .catch(function() { T('Email tidak ditemukan'); });
+}
+
+function doLogout() {
+  auth.signOut().then(function() {
+    document.querySelectorAll('.sub').forEach(function(s) { s.classList.remove('on'); });
+    document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
+    document.getElementById('sc-login').classList.add('on');
+    T('Sampai jumpa!');
+  });
+}
+
+function showReg() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('reg-form').style.display = 'block';
+}
+
+function hideReg() {
+  document.getElementById('reg-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+}
+
+function doReg() {
+  var name = document.getElementById('rn').value.trim();
+  var email = document.getElementById('re').value.trim();
+  var pass = document.getElementById('rp').value;
+  if (!name) { T('Isi nama dulu!'); return; }
+  if (!email) { T('Isi email dulu!'); return; }
+  if (pass.length < 6) { T('Password minimal 6 karakter!'); return; }
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) { return cred.user.updateProfile({ displayName: name }); })
+    .then(function() { T('Akun berhasil dibuat! Selamat datang, ' + name + '!'); })
+    .catch(function(e) {
+      if (e.code === 'auth/email-already-in-use') T('Email sudah terdaftar');
+      else if (e.code === 'auth/weak-password') T('Password terlalu lemah');
+      else T('Gagal daftar: ' + e.message);
+    });
+}
+
+// ── DATA ──
+var AN = [
+  {id:'TOS-SAP-001',n:'Sultan',sp:'Sapi Limosin',g:'Jantan',f:'Dewasa Produktif',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-KMB-001',n:'Ratu',sp:'Kambing Etawa',g:'Betina',f:'Sedang Bunting',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-SAP-002',n:'Garuda',sp:'Sapi Brahman',g:'Jantan',f:'Dewasa Produktif',st:'Perlu Perhatian',l:'Mojosari',c:'#D4960A'},
+  {id:'TOS-DMB-001',n:'Mawar',sp:'Domba Merino',g:'Betina',f:'Remaja',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-SAP-003',n:'Titan',sp:'Sapi Simmental',g:'Jantan',f:'Dewasa Produktif',st:'Darurat',l:'Mojosari',c:'#E03A52'},
+  {id:'TOS-KMB-002',n:'Putri',sp:'Kambing Boer',g:'Betina',f:'Produktivitas Menurun',st:'Sehat',l:'Mojosari',c:'#00B86B'}
+];
+
+var LS = [
+  {id:'M001',s:'H. Budi Santoso',sp:'Sapi Limosin',h:28500000,l:'Mojokerto',st:'Tersedia',wa:'6281234567890',d:'Sapi Limosin jantan 3 tahun, vaksin lengkap.',em:'🐄'},
+  {id:'M002',s:'Pak Rahmat',sp:'Kambing Etawa',h:4200000,l:'Lumajang',st:'Tersedia',wa:'6289876543210',d:'Kambing Etawa betina produktif.',em:'🐐'},
+  {id:'M003',s:'CV. Omega Farm',sp:'Sapi Brahman',h:45000000,l:'Probolinggo',st:'Diproses',wa:'6285555444333',d:'Sapi Brahman 520kg.',em:'🐄'},
+  {id:'M004',s:'Ibu Sari',sp:'Domba Merino',h:3800000,l:'Jember',st:'Tersedia',wa:'6281111222333',d:'Domba Merino wol premium.',em:'🐑'}
+];
+
+var SC = {Sehat:'#00B86B','Perlu Perhatian':'#D4960A',Darurat:'#E03A52'};
+var SB = {Sehat:'rgba(0,184,107,.1)','Perlu Perhatian':'rgba(212,150,10,.1)',Darurat:'rgba(224,58,82,.1)'};
+var SL = {Tersedia:'#00B86B',Diproses:'#D4960A',Terjual:'#E03A52'};
+
+// ── FIRESTORE ──
+function loadAnimals(uid) {
+  db.collection('animals').where('owner', '==', uid)
+    .onSnapshot(function(snap) {
+      if (!snap.empty) {
+        AN = snap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+        document.getElementById('prf-hewan').textContent = AN.length;
+      }
+      RA();
+    }, function() { RA(); });
+}
+
+db.collection('listings').orderBy('createdAt', 'desc')
+  .onSnapshot(function(snap) {
+    if (!snap.empty) {
+      LS = snap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+      RL();
+    }
+  }, function() {});
+
+db.collection('community_chat').orderBy('createdAt', 'asc')
+  .onSnapshot(function(snap) {
+    snap.docChanges().forEach(function(change) {
+      if (change.type === 'added') {
+        var d = change.doc.data();
+        var msgs = document.getElementById('cmsgs');
+        if (!msgs) return;
+        var isMe = window.currentUser && d.uid === window.currentUser.uid;
+        if (!isMe) {
+          msgs.innerHTML += '<div class="cmsg"><div class="cav2">' + (d.flag || '👨‍🌾') + '</div><div class="cbbl"><div class="cu">' + d.name + ' · ' + d.loc + '</div><div class="clc">' + d.country + ' · baru saja</div><div class="ct">' + d.text + '</div></div></div>';
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      }
+    });
+  }, function() {});
+
+// ── NAVIGATION ──
+function G(n) {
+  document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
+  document.getElementById('sc-' + n).classList.add('on');
+  document.querySelectorAll('.bn').forEach(function(b) { b.classList.remove('on'); b.querySelector('.bn-lb').style.color = 'var(--t3)'; });
+  var b = document.getElementById('bn-' + n);
+  if (b) { b.classList.add('on'); b.querySelector('.bn-lb').style.color = 'var(--gold)'; }
+  window.scrollTo(0, 0);
+}
+
+function OS(id) { document.getElementById(id).classList.add('on'); window.scrollTo(0, 0); }
+function CS(id) { document.getElementById(id).classList.remove('on'); }
+function OM(id) { document.getElementById(id).classList.add('on'); }
+function CM(id) { document.getElementById(id).classList.remove('on'); }
+
+// ── ANIMALS ──
+function RA(f) {
+  f = f || 'Semua';
+  var list = document.getElementById('alist');
+  var data = f === 'Semua' ? AN : AN.filter(function(a) { return a.st === f; });
+  list.innerHTML = data.map(function(a) {
+    return '<div class="acard" style="--sc:' + (a.c || '#00B86B') + '" onclick="T(\'' + a.n + ' — ' + a.id + '\')">' +
+      '<div class="aav">' + a.n[0] + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px">' + a.n +
+          '<span style="background:' + (SB[a.st] || SB.Sehat) + ';color:' + (SC[a.st] || SC.Sehat) + ';padding:2px 6px;border-radius:6px;font-size:8px;font-weight:600">' + a.st + '</span></div>' +
+        '<div style="font-size:10px;color:var(--gold);margin:2px 0">' + a.sp + ' · ' + a.f + '</div>' +
+        '<div style="display:flex;gap:8px"><span style="font-size:9px;color:var(--t2)">📍 ' + a.l + '</span><span style="font-size:9px;color:var(--t2)">' + a.g + '</span></div>' +
+        '<div style="font-family:var(--fm);font-size:8px;color:var(--t3);margin-top:2px">' + a.id + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function FA(f, b) {
+  document.querySelectorAll('#mf .chip').forEach(function(c) { c.classList.remove('on'); });
+  b.classList.add('on');
+  RA(f);
+}
+
+function AddA() {
+  var n = document.getElementById('nn').value.trim();
+  if (!n) { T('Isi nama dulu!'); return; }
+  var s = document.getElementById('nst').value;
+  var animal = {id: 'TOS-NEW-' + Date.now(), n: n, sp: document.getElementById('ns').value, g: document.getElementById('ng').value, f: document.getElementById('nf').value, st: s, l: document.getElementById('nl').value || 'Mojosari', c: SC[s] || '#00B86B'};
+  AN.push(animal);
+  CM('m-animal');
+  RA();
+  if (window.currentUser) {
+    db.collection('animals').add(Object.assign({}, animal, {owner: window.currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()}))
+      .then(function() { T('✅ ' + n + ' tersimpan di cloud!'); });
+  } else {
+    T('✅ ' + n + ' didaftarkan!');
+  }
+}
+
+// ── MARKETPLACE ──
+function FR(v) {
+  if (v >= 1e9) return 'Rp ' + (v/1e9).toFixed(1) + 'M';
+  if (v >= 1e6) return 'Rp ' + (v/1e6).toFixed(1) + 'jt';
+  return 'Rp ' + (v/1e3).toFixed(0) + 'rb';
+}
+
+function RL(f) {
+  f = f || 'Semua';
+  var g = document.getElementById('lgrid');
+  if (!g) return;
+  var data = f === 'Semua' ? LS : LS.filter(function(l) { return l.sp.includes(f) || l.st === f; });
+  g.innerHTML = data.map(function(l) {
+    return '<div class="lst">' +
+      '<div class="limg">' + l.em + '<span class="lprice">' + FR(l.h) + '</span>' +
+        '<span style="position:absolute;top:7px;left:9px;padding:2px 7px;border-radius:6px;background:' + (SL[l.st] || SL.Tersedia) + '1A;color:' + (SL[l.st] || SL.Tersedia) + ';font-size:8px;font-weight:600">' + l.st + '</span></div>' +
+      '<div class="lbody">' +
+        '<div style="font-size:12px;font-weight:600;color:var(--t1)">' + l.s + '</div>' +
+        '<div style="display:flex;gap:9px;margin-top:4px"><span style="font-size:9px;color:var(--t2)">🏷 ' + l.sp + '</span><span style="font-size:9px;color:var(--t2)">📍 ' + l.l + '</span></div>' +
+        '<div style="font-size:10px;color:var(--t2);margin-top:5px;line-height:1.5">' + l.d + '</div>' +
+        (l.st === 'Tersedia' ? '<button style="width:100%;margin-top:9px;padding:8px;border-radius:9px;background:rgba(0,184,107,.1);color:var(--green);border:1px solid rgba(0,184,107,.2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--fb)" onclick="window.open(\'https://wa.me/' + l.wa + '?text=Halo, tertarik ' + l.sp + ' (' + l.id + ') ' + FR(l.h) + ' di TernakOS\',\'_blank\')">💬 Hubungi via WhatsApp</button>' : '<div style="text-align:center;font-size:10px;color:var(--t3);padding:7px">' + l.st + '</div>') +
+      '</div></div>';
+  }).join('');
+}
+
+function FM(f, b) {
+  document.querySelectorAll('#mktf .chip').forEach(function(c) { c.classList.remove('on'); });
+  b.classList.add('on');
+  RL(f);
+}
+
+function AddL() {
+  var h = parseInt(document.getElementById('sh').value) || 0;
+  if (!h) { T('Isi harga dulu!'); return; }
+  var user = window.currentUser;
+  var name = user ? (user.displayName || user.email.split('@')[0]) : 'Akun Saya';
+  var listing = {id: 'NEW-' + Date.now(), s: name, sp: document.getElementById('ss2').value, h: h, l: document.getElementById('sl').value || '-', st: 'Tersedia', wa: document.getElementById('sw').value || '', d: document.getElementById('sd').value || '', em: '🐄'};
+  LS.unshift(listing);
+  CM('m-sell');
+  RL();
+  if (user) {
+    db.collection('listings').add(Object.assign({}, listing, {sellerUid: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()}))
+      .then(function() { T('✅ Listing berhasil diposting!'); });
+  } else {
+    T('✅ Listing berhasil diposting!');
+  }
+}
+
+// ── HEALTH ──
+var selC = '', sym = {};
+var CL = {dalam:'🔴 Penyakit Dalam', luar:'🟡 Penyakit Luar', cerna:'🟠 Pencernaan', repro:'🔵 Reproduksi', nafas:'🟣 Pernafasan', nutrisi:'⚪ Nutrisi'};
+
+function PC(c) {
+  selC = c; sym = {};
+  document.getElementById('hs1').style.display = 'none';
+  document.getElementById('hs2').style.display = 'block';
+  document.getElementById('cbadge').textContent = CL[c];
+  document.querySelectorAll('.ssec').forEach(function(s) { s.classList.remove('on'); });
+  var el = document.getElementById('ss-' + c);
+  if (el) el.classList.add('on');
+  document.getElementById('ares').classList.remove('on');
+  document.querySelectorAll('.so').forEach(function(b) { b.classList.remove('on'); });
+  // Show OMEGA detail box based on tier
+  var tier = (document.querySelector('.ntier') || {}).textContent || 'BASIC';
+  var ob = document.getElementById('omega-detail-box');
+  if (ob) ob.style.display = tier === 'OMEGA' ? 'block' : 'none';
+}
+
+function BC() {
+  document.getElementById('hs1').style.display = 'block';
+  document.getElementById('hs2').style.display = 'none';
+}
+
+function SS(b, k, v) {
+  document.querySelectorAll('.so').forEach(function(x) {
+    if (x.getAttribute('onclick') && x.getAttribute('onclick').indexOf("'" + k + "'") !== -1) {
+      x.classList.remove('on');
+    }
+  });
+  b.classList.add('on');
+  sym[k] = v;
+}
+
+function AZ() {
+  var tierEl = document.querySelector('.ntier');
+  var tier = tierEl ? tierEl.textContent.trim() : 'BASIC';
+  
+  // Tier-based token limits
+  var tierTokens = {BASIC: 80, PRO: 300, EXCLUSIVE: 600, OMEGA: 1500};
+  var maxTok = tierTokens[tier] || 80;
+
+  // Build symptom summary
+  var symDesc = Object.entries(sym).map(function(e) { return e[0] + ': ' + e[1]; }).join(', ');
+  var category = CL[selC] || selC;
+  
+  var omegaDetail = '';
+  if (tier === 'OMEGA') {
+    var detailEl = document.getElementById('omega-detail');
+    omegaDetail = detailEl && detailEl.value.trim() ? '\n\nCerita detail pemilik: ' + detailEl.value.trim() : '';
+  }
+
+  // Tier-based prompt instruction
+  var depthInstruction = {
+    BASIC: 'Berikan HANYA tingkat keparahan dalam satu baris: contoh "🔴 DARURAT" atau "🟡 WASPADA". Tanpa deskripsi tambahan.',
+    PRO: 'Berikan tingkat keparahan dan deskripsi singkat 2-3 kalimat tentang kondisi hewan.',
+    EXCLUSIVE: 'Berikan tingkat keparahan, kemungkinan diagnosis, dan langkah penanganan singkat. Maksimal 150 kata.',
+    OMEGA: 'Berikan analisa LENGKAP dan DETAIL: (1) Tingkat keparahan, (2) Kemungkinan diagnosis, (3) Tindakan segera, (4) Perlu dokter hewan atau tidak dan kapan, (5) Pencegahan ke depan. Gunakan format terstruktur.'
+  }[tier] || 'Berikan HANYA tingkat keparahan dalam satu baris.';
+
+  var prompt = 'Kamu adalah Omega Intelligence, AI dokter hewan TernakOS.\n\nKategori: ' + category + '\nGejala: ' + (symDesc || 'belum spesifik') + omegaDetail + '\n\n' + depthInstruction;
+
+  // Show loading
+  var r = document.getElementById('ares');
+  var lv = document.getElementById('alv');
+  var adv = document.getElementById('aadv');
+  var vet = document.getElementById('vsec');
+  r.style.cssText = 'background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:15px;';
+  lv.style.color = 'var(--gold)'; lv.textContent = '⏳ Menganalisa...';
+  adv.innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+  vet.style.display = 'none';
+  r.classList.add('on');
+  r.scrollIntoView({behavior:'smooth', block:'start'});
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      messages: [{role:'system', content: getLangInstruction()}, {role:'user', content: prompt}],
+      max_tokens: maxTok
+    })
+  }).then(function(res) { return res.json(); })
+    .then(function(d) {
+      var ai = (d.choices && d.choices[0] && d.choices[0].message) ? d.choices[0].message.content : 'Tidak dapat menganalisa.';
+      
+      // Detect severity
+      var aiLower = ai.toLowerCase();
+      if (aiLower.includes('kritis') || aiLower.includes('critical')) {
+        r.style.cssText = 'background:rgba(224,58,82,.07);border:1px solid rgba(224,58,82,.25);border-radius:12px;padding:15px;';
+        lv.style.color = '#E03A52'; lv.textContent = '⚫ KRITIS';
+        vet.style.display = 'block';
+      } else if (aiLower.includes('darurat') || aiLower.includes('emergency')) {
+        r.style.cssText = 'background:rgba(224,58,82,.05);border:1px solid rgba(224,58,82,.2);border-radius:12px;padding:15px;';
+        lv.style.color = '#E03A52'; lv.textContent = '🔴 DARURAT';
+        vet.style.display = 'block';
+      } else if (aiLower.includes('siaga') || aiLower.includes('warning')) {
+        r.style.cssText = 'background:rgba(212,150,10,.05);border:1px solid rgba(212,150,10,.2);border-radius:12px;padding:15px;';
+        lv.style.color = '#D4960A'; lv.textContent = '🟠 SIAGA';
+      } else if (aiLower.includes('waspada') || aiLower.includes('caution')) {
+        r.style.cssText = 'background:rgba(200,152,26,.05);border:1px solid rgba(200,152,26,.18);border-radius:12px;padding:15px;';
+        lv.style.color = 'var(--gold)'; lv.textContent = '🟡 WASPADA';
+      } else {
+        r.style.cssText = 'background:rgba(0,184,107,.05);border:1px solid rgba(0,184,107,.18);border-radius:12px;padding:15px;';
+        lv.style.color = 'var(--green)'; lv.textContent = '✦ Analisa Selesai';
+      }
+
+      // BASIC: no description shown
+      if (tier === 'BASIC') {
+        adv.innerHTML = '<div style="font-size:10px;color:var(--t3);margin-top:6px">Upgrade ke PRO untuk mendapat deskripsi lengkap.</div>';
+      } else {
+        var rendered = (typeof marked !== 'undefined') ? marked.parse(ai) : ai.replace(/\n/g,'<br>');
+        adv.innerHTML = rendered;
+      }
+    }).catch(function() {
+      lv.textContent = '⚠ Koneksi gagal';
+      adv.textContent = 'Tidak dapat terhubung ke AI. Coba lagi.';
+    });
+}
+
+
+
+// ── ANNUITY ──
+function ROI() {
+  var m = parseFloat(document.getElementById('am').value) || 0;
+  var tg = parseFloat(document.getElementById('at').value) || 0;
+  if (!m || !tg) { T('Isi modal dan target jual dulu!'); return; }
+  var p = parseFloat(document.getElementById('ap').value) || 0;
+  var b = parseInt(document.getElementById('ab').value) || 6;
+  var inf = parseFloat(document.getElementById('ai2').value) || 5;
+  var komoditas = (document.getElementById('ann-komoditas') || {}).value || 'ternak';
+
+  // Calculate
+  var tp = 0;
+  for (var i = 0; i < b; i++) tp += p * Math.pow(1 + inf/100/12, i);
+  var tm = m + tp, pr = tg - tm, rv = (pr/tm)*100, mo = pr/b, pb = tm/(tg/b);
+  var c = rv >= 20 ? 'var(--green)' : rv >= 10 ? '#D4960A' : 'var(--red)';
+
+  // Show result
+  document.getElementById('rpct').style.color = c;
+  document.getElementById('rpct').style.textShadow = '0 0 24px ' + c;
+  document.getElementById('rpct').textContent = rv.toFixed(1) + '%';
+  document.getElementById('rdesc').style.color = c;
+  document.getElementById('rdesc').textContent = rv >= 20 ? '🔥 Sangat Menguntungkan' : rv >= 10 ? '⚡ Cukup Baik' : '⚠ Di Bawah Target';
+  document.getElementById('rmod').textContent = FR(tm);
+  document.getElementById('rprf').textContent = (pr >= 0 ? '+' : '') + FR(pr);
+  document.getElementById('rmon').textContent = FR(mo) + '/bln';
+  document.getElementById('rpay').textContent = pb.toFixed(1) + ' bln';
+  document.getElementById('rres').style.display = 'block';
+  document.getElementById('rrec').innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+
+  // Get tier for AI token limit
+  var tier = (document.querySelector('.ntier') || {}).textContent || 'PRO';
+  var tierTokens = {PRO: 400, EXCLUSIVE: 700, OMEGA: 1200};
+  var maxTok = tierTokens[tier] || 400;
+
+  // AI Analysis
+  var prompt = 'Kamu adalah Omega Intelligence, AI konsultan keuangan TernakOS. Berikan rekomendasi investasi berdasarkan kalkulasi ROI ini:\n\nKomoditas: ' + (komoditas || 'tidak disebutkan') + '\nModal: Rp ' + m.toLocaleString('id-ID') + '\nTarget jual: Rp ' + tg.toLocaleString('id-ID') + '\nBiaya pakan/bln: Rp ' + p.toLocaleString('id-ID') + '\nDurasi: ' + b + ' bulan\nTotal biaya: Rp ' + Math.round(tm).toLocaleString('id-ID') + '\nROI: ' + rv.toFixed(1) + '%\nProfit bersih: Rp ' + Math.round(pr).toLocaleString('id-ID') + '\nPayback period: ' + pb.toFixed(1) + ' bulan\n\nBerikan:\n1. Penilaian apakah investasi ini layak\n2. Strategi untuk meningkatkan ROI\n3. Risiko yang perlu diwaspadai\n4. Tips timing jual yang optimal\n\nJawab dalam Bahasa Indonesia, singkat dan actionable.';
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ messages: [{role:'system', content: getLangInstruction()}, {role:'user', content: prompt}], max_tokens: maxTok })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      var ai = (d.choices && d.choices[0] && d.choices[0].message) ? d.choices[0].message.content : '';
+      var el = document.getElementById('rrec');
+      if (el) el.innerHTML = (typeof marked !== 'undefined' && ai) ? marked.parse(ai) : (ai || 'Analisa tidak tersedia').replace(/\n/g,'<br>');
+    }).catch(function() {
+      var el = document.getElementById('rrec');
+      if (el) el.textContent = rv >= 20 ? 'ROI ' + rv.toFixed(1) + '% sangat baik. Waktu optimal jual bulan ke-' + b + '.' : rv >= 10 ? 'ROI ' + rv.toFixed(1) + '% cukup. Coba kurangi biaya pakan.' : 'ROI di bawah target. Pertimbangkan perpanjang durasi penggemukan.';
+    });
+}
+
+
+
+// ── COMMUNITY CHAT ──
+function doSendComm() {
+  var inp = document.getElementById('cinp');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  var user = window.currentUser;
+  var name = user ? (user.displayName || user.email.split('@')[0]) : 'Peternak';
+  var msgs = document.getElementById('cmsgs');
+  msgs.innerHTML += '<div class="cmsg"><div class="cav2">😊</div><div class="cbbl"><div class="cu">' + name + ' · Mojokerto</div><div class="clc">🇮🇩 · baru saja</div><div class="ct">' + txt + '</div></div></div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  inp.value = '';
+  if (user && db) {
+    db.collection('community_chat').add({uid: user.uid, name: name, loc: 'Mojokerto', country: '🇮🇩', flag: '😊', text: txt, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+  }
+}
+
+// ── CHART ──
+function buildChart() {
+  var bars = document.getElementById('cbars');
+  var lbls = document.getElementById('clbls');
+  if (!bars) return;
+  var p = [36,37,36.5,37.8,38,37.5,38.5];
+  var d = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  var mx = Math.max.apply(null, p);
+  bars.innerHTML = p.map(function(v, i) {
+    return '<div class="cbar' + (i === p.length-1 ? ' hi' : '') + '" style="height:' + (v/mx*100) + '%"></div>';
+  }).join('');
+  lbls.innerHTML = d.map(function(x) {
+    return '<div style="flex:1;text-align:center;font-size:8px;color:var(--t3)">' + x + '</div>';
+  }).join('');
+}
+
+// ── TOAST ──
+function T(msg) {
+  var el = document.getElementById('toastel');
+  el.textContent = msg;
+  el.classList.add('on');
+  setTimeout(function() { el.classList.remove('on'); }, 2500);
+}
+
+
+// ── TIER SWITCHER ──
+var currentTier = 'OMEGA';
+function setTier(tier) {
+  currentTier = tier;
+  // Update nav badge
+  var el = document.getElementById('nav-tier');
+  if (el) el.textContent = tier;
+  // Update settings display
+  var sd = document.getElementById('set-tier-display');
+  if (sd) sd.textContent = tier;
+  // Update checkmarks
+  ['BASIC','PRO','EXCLUSIVE','OMEGA'].forEach(function(t) {
+    var c = document.getElementById('tier-check-' + t);
+    if (c) c.style.display = t === tier ? 'inline' : 'none';
+  });
+  // Update tier row highlight
+  document.querySelectorAll('#tier-list .csrow').forEach(function(row, i) {
+    var tiers = ['BASIC','PRO','EXCLUSIVE','OMEGA'];
+    row.style.background = tiers[i] === tier ? 'var(--gd)' : '';
+    row.style.borderColor = tiers[i] === tier ? 'var(--bdr)' : '';
+  });
+  T('Mode ' + tier + ' aktif');
+  CM('m-tier');
+}
+
+// ── NOTIFICATIONS ──
+function clearNotifs() {
+  document.getElementById('notif-list').innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">Tidak ada notifikasi</div>';
+  document.getElementById('notif-dot').style.display = 'none';
+  T('Notifikasi dihapus');
+}
+
+// ── SETTINGS ──
+function saveSettings() {
+  var loc = document.getElementById('set-location');
+  if (loc && loc.value) T('✅ Pengaturan disimpan!');
+  CM('sub-settings');
+}
+
+// Update settings display on auth
+function updateSettingsDisplay(user) {
+  var sn = document.getElementById('set-name-display');
+  var se = document.getElementById('set-email-display');
+  if (sn) sn.textContent = user.displayName || '-';
+  if (se) se.textContent = user.email || '-';
+}
+
+
+// ── PROFILE EDIT ──
+function toggleEditPrf() {
+  var panel = document.getElementById('prf-edit-panel');
+  var btn = document.getElementById('prf-edit-toggle');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.textContent = '✕ Tutup Edit Profil';
+  } else {
+    panel.style.display = 'none';
+    btn.textContent = '✏️ Edit Profil';
+  }
+}
+
+function saveProfileName() {
+  var newName = (document.getElementById('prf-edit-name') || {}).value;
+  if (!newName || !newName.trim()) { T('Isi nama dulu!'); return; }
+  newName = newName.trim();
+  var user = window.currentUser;
+  if (!user) { T('Login dulu!'); return; }
+  user.updateProfile({ displayName: newName }).then(function() {
+    document.getElementById('prf-name').textContent = newName.toUpperCase();
+    document.getElementById('dash-greeting').textContent = 'SELAMAT DATANG, ' + newName.toUpperCase().split(' ')[0];
+    var sn = document.getElementById('set-name-display');
+    if (sn) sn.textContent = newName;
+    var al = document.getElementById('prf-avatar-letter');
+    if (al) al.textContent = newName[0].toUpperCase();
+    document.getElementById('prf-edit-name').value = '';
+    T('✅ Nama berhasil diubah!');
+  }).catch(function(e) { T('Gagal: ' + e.message); });
+}
+
+function saveProfileWA() {
+  var wa = (document.getElementById('prf-edit-wa') || {}).value;
+  if (!wa || !wa.trim()) { T('Isi nomor WA dulu!'); return; }
+  wa = wa.trim();
+  if (!wa.startsWith('62')) { T('Format: 628xxxxxxxxx'); return; }
+  var user = window.currentUser;
+  if (!user) { T('Login dulu!'); return; }
+  var done = function() {
+    // Show WA in info row
+    var waDisplay = document.getElementById('prf-wa-display');
+    var waRow = document.getElementById('prf-wa-row');
+    if (waDisplay) waDisplay.textContent = '+' + wa;
+    if (waRow) waRow.style.display = 'flex';
+    document.getElementById('prf-edit-wa').value = '';
+    T('✅ No. WhatsApp tersimpan!');
+  };
+  if (db) {
+    db.collection('users').doc(user.uid).set({ wa: wa }, { merge: true }).then(done).catch(function() {
+      try { localStorage.setItem('ternakos_wa_' + user.uid, wa); } catch(e) {}
+      done();
+    });
+  } else {
+    try { localStorage.setItem('ternakos_wa_' + user.uid, wa); } catch(e) {}
+    done();
+  }
+}
+
+function uploadProfilePhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  if (file.size > 2 * 1024 * 1024) { T('Foto max 2MB!'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    var img = document.getElementById('prf-avatar-img');
+    var letter = document.getElementById('prf-avatar-letter');
+    if (img) { img.src = dataUrl; img.style.display = 'block'; }
+    if (letter) letter.style.display = 'none';
+    var user = window.currentUser;
+    if (user) {
+      try { localStorage.setItem('ternakos_photo_' + user.uid, dataUrl); } catch(e) {
+        T('Foto terlalu besar untuk disimpan'); return;
+      }
+    }
+    T('✅ Foto profil diperbarui!');
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadProfileWA(uid) {
+  var show = function(wa) {
+    var el = document.getElementById('prf-wa-display');
+    var row = document.getElementById('prf-wa-row');
+    if (el) el.textContent = '+' + wa;
+    if (row) row.style.display = 'flex';
+  };
+  if (db) {
+    db.collection('users').doc(uid).get().then(function(doc) {
+      if (doc.exists && doc.data().wa) show(doc.data().wa);
+    }).catch(function() {});
+  }
+  try {
+    var wa = localStorage.getItem('ternakos_wa_' + uid);
+    if (wa) show(wa);
+  } catch(e) {}
+}
+
+function loadProfilePhoto(uid) {
+  try {
+    var dataUrl = localStorage.getItem('ternakos_photo_' + uid);
+    if (dataUrl) {
+      var img = document.getElementById('prf-avatar-img');
+      var letter = document.getElementById('prf-avatar-letter');
+      if (img) { img.src = dataUrl; img.style.display = 'block'; }
+      if (letter) letter.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+// ── TIER SWITCHER ──
+var currentTier = 'OMEGA';
+function setTier(tier) {
+  currentTier = tier;
+  var el = document.getElementById('nav-tier');
+  if (el) el.textContent = tier;
+  var sd = document.getElementById('set-tier-display');
+  if (sd) sd.textContent = tier;
+  ['BASIC','PRO','EXCLUSIVE','OMEGA'].forEach(function(t) {
+    var c = document.getElementById('tier-check-' + t);
+    if (c) c.style.display = t === tier ? 'inline' : 'none';
+  });
+  document.querySelectorAll('#tier-list .csrow').forEach(function(row, i) {
+    var tiers = ['BASIC','PRO','EXCLUSIVE','OMEGA'];
+    row.style.background = tiers[i] === tier ? 'var(--gd)' : '';
+    row.style.borderColor = tiers[i] === tier ? 'var(--bdr)' : '';
+  });
+  var ob = document.getElementById('omega-detail-box');
+  if (ob) ob.style.display = tier === 'OMEGA' ? 'block' : 'none';
+  updateGeoByTier(tier);
+  updateForecastByTier(tier);
+  T('Mode ' + tier + ' aktif');
+  CM('m-tier');
+}
+
+// ── NOTIFICATIONS ──
+function clearNotifs() {
+  var el = document.getElementById('notif-list');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">Tidak ada notifikasi</div>';
+  var dot = document.getElementById('notif-dot');
+  if (dot) dot.style.display = 'none';
+  T('Notifikasi dihapus');
+}
+
+// ── SETTINGS ──
+function saveSettings() {
+  var settings = {
+    location: (document.getElementById('set-location') || {}).value || 'Mojosari, Mojokerto',
+    notifHealth: !!(document.getElementById('set-notif-health') || {}).checked,
+    notifMarket: !!(document.getElementById('set-notif-market') || {}).checked,
+    notifWeather: !!(document.getElementById('set-notif-weather') || {}).checked,
+    darkMode: !!(document.getElementById('set-dark') || {}).checked,
+    lang: (document.getElementById('set-lang') || {}).value || 'id',
+    aiDeep: !!(document.getElementById('set-ai-deep') || {}).checked,
+    aiMd: !!(document.getElementById('set-ai-md') || {}).checked
+  };
+  try { localStorage.setItem('ternakos_settings', JSON.stringify(settings)); } catch(e) {}
+  applySettings(settings);
+  T('✅ Pengaturan disimpan!');
+  CS('sub-settings');
+}
+
+function applySettings(s) {
+  if (!s) return;
+  var maps = {'set-notif-health':s.notifHealth,'set-notif-market':s.notifMarket,'set-notif-weather':s.notifWeather,'set-dark':s.darkMode,'set-ai-deep':s.aiDeep,'set-ai-md':s.aiMd};
+  Object.keys(maps).forEach(function(id) { var el = document.getElementById(id); if (el && maps[id] !== undefined) el.checked = maps[id]; });
+  if (s.location) { var el = document.getElementById('set-location'); if (el) el.value = s.location; }
+  if (s.lang) { var el = document.getElementById('set-lang'); if (el) el.value = s.lang; }
+  // Apply dark/light mode properly using class
+  if (s.darkMode === false) {
+    document.body.classList.add('light-mode');
+    document.body.style.background = '';
+    document.body.style.color = '';
+  } else {
+    document.body.classList.remove('light-mode');
+    document.body.style.background = '';
+    document.body.style.color = '';
+  }
+}
+
+function loadSettings() {
+  try { var raw = localStorage.getItem('ternakos_settings'); if (raw) applySettings(JSON.parse(raw)); } catch(e) {}
+}
+
+function updateSettingsDisplay(user) {
+  var sn = document.getElementById('set-name-display');
+  var se = document.getElementById('set-email-display');
+  if (sn) sn.textContent = user.displayName || '-';
+  if (se) se.textContent = user.email || '-';
+}
+
+
+// ── LANGUAGE SYSTEM ──
+var currentLang = 'id';
+var I18N = {
+  id: {
+    // Nav
+    nav_dash:'Dasbor', nav_monitor:'Monitor', nav_market:'Market', nav_health:'Health', nav_ai:'AI',
+    // Dashboard
+    dash_fitur:'FITUR', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Marketplace', feat_annuity:'Annuity ROI', feat_weather:'Cuaca & Geo',
+    feat_store:'Official Store', feat_hayati:'Hayati', feat_financial:'Financial',
+    feat_profile:'Profil', feat_notif:'Notifikasi', feat_settings:'Pengaturan',
+    // Health
+    health_title:'AI Diagnosis', health_subtitle:'Pilih kategori keluhan',
+    cat_dalam:'Penyakit Dalam', cat_luar:'Penyakit Luar', cat_cerna:'Pencernaan',
+    cat_repro:'Reproduksi', cat_nafas:'Pernafasan', cat_nutrisi:'Nutrisi & Tumbuh',
+    btn_analyze:'Analisa AI',
+    // AI
+    ai_title:'OMEGA INTELLIGENCE', ai_placeholder:'Tanya Omega AI...',
+    // Settings
+    settings_eye:'PENGATURAN GLOBAL', settings_title:'Settings',
+    settings_akun:'AKUN', settings_sub:'SUBSCRIPTION', settings_notif_title:'NOTIFIKASI',
+    settings_tampilan:'TAMPILAN', settings_lokasi:'LOKASI DEFAULT',
+    btn_save_settings:'Simpan Pengaturan', btn_logout:'Keluar dari Akun',
+    // Monitor/Market/Weather/Annuity
+    mon_eye:'OMNI-MONITOR', mkt_eye:'MARKET INTELLIGENCE',
+    ann_eye:'SMART ANNUITY OPTIMIZER', btn_calc_roi:'⚡ Hitung ROI + Analisa AI',
+    wx_eye:'WEATHER & GEO INTELLIGENCE', geo_eye:'GEO INTELLIGENCE',
+    // Profile
+    prf_omega_eye:'FITUR OMEGA', prf_soon_eye:'COMING SOON',
+    btn_edit_profile:'✏️ Edit Profil',
+    // Login
+    btn_login:'Masuk', btn_forgot:'Lupa password?', btn_google:'Masuk dengan Google',
+    reg_title:'BUAT AKUN BARU', btn_register:'Buat Akun',
+    // AI lang instruction
+    ai_lang_instruction:'Jawab dalam Bahasa Indonesia.'
+  },
+  en: {
+    nav_dash:'Dashboard', nav_monitor:'Monitor', nav_market:'Market', nav_health:'Health', nav_ai:'AI',
+    dash_fitur:'FEATURES', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Marketplace', feat_annuity:'Annuity ROI', feat_weather:'Weather & Geo',
+    feat_store:'Official Store', feat_hayati:'Ecosystem', feat_financial:'Financial',
+    feat_profile:'Profile', feat_notif:'Notifications', feat_settings:'Settings',
+    health_title:'AI Diagnosis', health_subtitle:'Select complaint category',
+    cat_dalam:'Internal Disease', cat_luar:'External Disease', cat_cerna:'Digestive',
+    cat_repro:'Reproductive', cat_nafas:'Respiratory', cat_nutrisi:'Nutrition & Growth',
+    btn_analyze:'Analyze with AI',
+    ai_title:'OMEGA INTELLIGENCE', ai_placeholder:'Ask Omega AI...',
+    settings_eye:'GLOBAL SETTINGS', settings_title:'Settings',
+    settings_akun:'ACCOUNT', settings_sub:'SUBSCRIPTION', settings_notif_title:'NOTIFICATIONS',
+    settings_tampilan:'DISPLAY', settings_lokasi:'DEFAULT LOCATION',
+    btn_save_settings:'Save Settings', btn_logout:'Sign Out',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'MARKET INTELLIGENCE',
+    ann_eye:'SMART ANNUITY OPTIMIZER', btn_calc_roi:'⚡ Calculate ROI + AI Analysis',
+    wx_eye:'WEATHER & GEO INTELLIGENCE', geo_eye:'GEO INTELLIGENCE',
+    prf_omega_eye:'OMEGA FEATURES', prf_soon_eye:'COMING SOON',
+    btn_edit_profile:'✏️ Edit Profile',
+    btn_login:'Sign In', btn_forgot:'Forgot password?', btn_google:'Sign in with Google',
+    reg_title:'CREATE ACCOUNT', btn_register:'Create Account',
+    ai_lang_instruction:'Answer in English.'
+  },
+  ms: {
+    nav_dash:'Papan', nav_monitor:'Monitor', nav_market:'Pasaran', nav_health:'Kesihatan', nav_ai:'AI',
+    dash_fitur:'CIRI-CIRI', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Pasaran', feat_annuity:'ROI Anuiti', feat_weather:'Cuaca & Geo',
+    feat_store:'Kedai Rasmi', feat_hayati:'Ekosistem', feat_financial:'Kewangan',
+    feat_profile:'Profil', feat_notif:'Notifikasi', feat_settings:'Tetapan',
+    health_title:'Diagnosis AI', health_subtitle:'Pilih kategori aduan',
+    cat_dalam:'Penyakit Dalaman', cat_luar:'Penyakit Luaran', cat_cerna:'Pencernaan',
+    cat_repro:'Reproduktif', cat_nafas:'Pernafasan', cat_nutrisi:'Nutrisi & Tumbesaran',
+    btn_analyze:'Analisis AI',
+    ai_title:'OMEGA INTELLIGENCE', ai_placeholder:'Tanya Omega AI...',
+    settings_eye:'TETAPAN GLOBAL', settings_title:'Tetapan',
+    settings_akun:'AKAUN', settings_sub:'LANGGANAN', settings_notif_title:'PEMBERITAHUAN',
+    settings_tampilan:'PAPARAN', settings_lokasi:'LOKASI LALAI',
+    btn_save_settings:'Simpan Tetapan', btn_logout:'Log Keluar',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'RISIKAN PASARAN',
+    ann_eye:'PENGOPTIMUM ANUITI', btn_calc_roi:'⚡ Kira ROI + Analisis AI',
+    wx_eye:'RISIKAN CUACA & GEO', geo_eye:'RISIKAN GEO',
+    prf_omega_eye:'CIRI OMEGA', prf_soon_eye:'AKAN DATANG',
+    btn_edit_profile:'✏️ Edit Profil',
+    btn_login:'Log Masuk', btn_forgot:'Lupa kata laluan?', btn_google:'Log masuk dengan Google',
+    reg_title:'BUAT AKAUN BARU', btn_register:'Buat Akaun',
+    ai_lang_instruction:'Jawab dalam Bahasa Melayu.'
+  },
+  ar: {
+    nav_dash:'لوحة', nav_monitor:'مراقب', nav_market:'سوق', nav_health:'صحة', nav_ai:'ذكاء',
+    dash_fitur:'الميزات', dash_omega_ai:'أوميغا AI',
+    feat_marketplace:'سوق', feat_annuity:'عائد الاستثمار', feat_weather:'الطقس',
+    feat_store:'المتجر', feat_hayati:'النظام البيئي', feat_financial:'مالية',
+    feat_profile:'الملف', feat_notif:'إشعارات', feat_settings:'الإعدادات',
+    health_title:'تشخيص AI', health_subtitle:'اختر فئة الشكوى',
+    cat_dalam:'أمراض داخلية', cat_luar:'أمراض خارجية', cat_cerna:'هضم',
+    cat_repro:'تناسل', cat_nafas:'تنفس', cat_nutrisi:'تغذية ونمو',
+    btn_analyze:'تحليل AI',
+    ai_title:'أوميغا إنتليجنس', ai_placeholder:'اسأل أوميغا...',
+    settings_eye:'الإعدادات العامة', settings_title:'الإعدادات',
+    settings_akun:'الحساب', settings_sub:'الاشتراك', settings_notif_title:'الإشعارات',
+    settings_tampilan:'العرض', settings_lokasi:'الموقع الافتراضي',
+    btn_save_settings:'حفظ الإعدادات', btn_logout:'تسجيل الخروج',
+    mon_eye:'المراقبة الشاملة', mkt_eye:'ذكاء السوق',
+    ann_eye:'محسن الأرباح', btn_calc_roi:'⚡ احسب العائد + تحليل AI',
+    wx_eye:'ذكاء الطقس والجغرافيا', geo_eye:'الذكاء الجغرافي',
+    prf_omega_eye:'ميزات أوميغا', prf_soon_eye:'قريباً',
+    btn_edit_profile:'✏️ تعديل الملف',
+    btn_login:'تسجيل الدخول', btn_forgot:'نسيت كلمة المرور؟', btn_google:'الدخول بجوجل',
+    reg_title:'إنشاء حساب جديد', btn_register:'إنشاء حساب',
+    ai_lang_instruction:'أجب باللغة العربية.'
+  },
+  zh: {
+    nav_dash:'仪表板', nav_monitor:'监控', nav_market:'市场', nav_health:'健康', nav_ai:'AI',
+    dash_fitur:'功能', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'市场', feat_annuity:'投资回报', feat_weather:'天气',
+    feat_store:'官方商店', feat_hayati:'生态系统', feat_financial:'金融',
+    feat_profile:'个人资料', feat_notif:'通知', feat_settings:'设置',
+    health_title:'AI诊断', health_subtitle:'选择症状类别',
+    cat_dalam:'内科疾病', cat_luar:'外科疾病', cat_cerna:'消化系统',
+    cat_repro:'生殖系统', cat_nafas:'呼吸系统', cat_nutrisi:'营养与生长',
+    btn_analyze:'AI分析',
+    ai_title:'OMEGA智能', ai_placeholder:'询问Omega AI...',
+    settings_eye:'全局设置', settings_title:'设置',
+    settings_akun:'账户', settings_sub:'订阅', settings_notif_title:'通知',
+    settings_tampilan:'显示', settings_lokasi:'默认位置',
+    btn_save_settings:'保存设置', btn_logout:'退出登录',
+    mon_eye:'全面监控', mkt_eye:'市场情报',
+    ann_eye:'智能投资优化', btn_calc_roi:'⚡ 计算ROI + AI分析',
+    wx_eye:'天气与地理情报', geo_eye:'地理情报',
+    prf_omega_eye:'OMEGA功能', prf_soon_eye:'即将推出',
+    btn_edit_profile:'✏️ 编辑资料',
+    btn_login:'登录', btn_forgot:'忘记密码？', btn_google:'使用谷歌登录',
+    reg_title:'创建新账户', btn_register:'创建账户',
+    ai_lang_instruction:'用中文回答。'
+  },
+  es: {
+    nav_dash:'Panel', nav_monitor:'Monitor', nav_market:'Mercado', nav_health:'Salud', nav_ai:'IA',
+    dash_fitur:'FUNCIONES', dash_omega_ai:'OMEGA IA',
+    feat_marketplace:'Mercado', feat_annuity:'ROI Anualidad', feat_weather:'Clima & Geo',
+    feat_store:'Tienda Oficial', feat_hayati:'Ecosistema', feat_financial:'Finanzas',
+    feat_profile:'Perfil', feat_notif:'Notificaciones', feat_settings:'Ajustes',
+    health_title:'Diagnóstico IA', health_subtitle:'Selecciona categoría',
+    cat_dalam:'Enfermedad Interna', cat_luar:'Enfermedad Externa', cat_cerna:'Digestivo',
+    cat_repro:'Reproductivo', cat_nafas:'Respiratorio', cat_nutrisi:'Nutrición',
+    btn_analyze:'Analizar con IA',
+    ai_title:'OMEGA INTELIGENCIA', ai_placeholder:'Pregunta a Omega IA...',
+    settings_eye:'CONFIGURACIÓN GLOBAL', settings_title:'Configuración',
+    settings_akun:'CUENTA', settings_sub:'SUSCRIPCIÓN', settings_notif_title:'NOTIFICACIONES',
+    settings_tampilan:'PANTALLA', settings_lokasi:'UBICACIÓN PREDETERMINADA',
+    btn_save_settings:'Guardar configuración', btn_logout:'Cerrar sesión',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'INTELIGENCIA DE MERCADO',
+    ann_eye:'OPTIMIZADOR DE ANUALIDAD', btn_calc_roi:'⚡ Calcular ROI + Análisis IA',
+    wx_eye:'INTELIGENCIA CLIMA & GEO', geo_eye:'INTELIGENCIA GEOGRÁFICA',
+    prf_omega_eye:'FUNCIONES OMEGA', prf_soon_eye:'PRÓXIMAMENTE',
+    btn_edit_profile:'✏️ Editar perfil',
+    btn_login:'Iniciar sesión', btn_forgot:'¿Olvidaste tu contraseña?', btn_google:'Entrar con Google',
+    reg_title:'CREAR CUENTA NUEVA', btn_register:'Crear cuenta',
+    ai_lang_instruction:'Responde en español.'
+  },
+  fr: {
+    nav_dash:'Tableau', nav_monitor:'Moniteur', nav_market:'Marché', nav_health:'Santé', nav_ai:'IA',
+    dash_fitur:'FONCTIONNALITÉS', dash_omega_ai:'OMEGA IA',
+    feat_marketplace:'Marché', feat_annuity:'ROI Annuité', feat_weather:'Météo & Géo',
+    feat_store:'Boutique Officielle', feat_hayati:'Écosystème', feat_financial:'Finance',
+    feat_profile:'Profil', feat_notif:'Notifications', feat_settings:'Paramètres',
+    health_title:'Diagnostic IA', health_subtitle:'Choisir la catégorie',
+    cat_dalam:'Maladie Interne', cat_luar:'Maladie Externe', cat_cerna:'Digestif',
+    cat_repro:'Reproductif', cat_nafas:'Respiratoire', cat_nutrisi:'Nutrition',
+    btn_analyze:'Analyser avec IA',
+    ai_title:'OMEGA INTELLIGENCE', ai_placeholder:'Demandez à Omega IA...',
+    settings_eye:'PARAMÈTRES GLOBAUX', settings_title:'Paramètres',
+    settings_akun:'COMPTE', settings_sub:'ABONNEMENT', settings_notif_title:'NOTIFICATIONS',
+    settings_tampilan:'AFFICHAGE', settings_lokasi:'LIEU PAR DÉFAUT',
+    btn_save_settings:'Enregistrer', btn_logout:'Se déconnecter',
+    mon_eye:'OMNI-MONITEUR', mkt_eye:'INTELLIGENCE MARCHÉ',
+    ann_eye:'OPTIMISEUR DE RENTE', btn_calc_roi:'⚡ Calculer ROI + Analyse IA',
+    wx_eye:'INTELLIGENCE MÉTÉO & GÉO', geo_eye:'INTELLIGENCE GÉOGRAPHIQUE',
+    prf_omega_eye:'FONCTIONS OMEGA', prf_soon_eye:'BIENTÔT DISPONIBLE',
+    btn_edit_profile:'✏️ Modifier le profil',
+    btn_login:'Se connecter', btn_forgot:'Mot de passe oublié?', btn_google:'Connexion Google',
+    reg_title:'CRÉER UN COMPTE', btn_register:'Créer un compte',
+    ai_lang_instruction:'Réponds en français.'
+  },
+  hi: {
+    nav_dash:'डैशबोर्ड', nav_monitor:'मॉनिटर', nav_market:'बाजार', nav_health:'स्वास्थ्य', nav_ai:'AI',
+    dash_fitur:'सुविधाएं', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'बाजार', feat_annuity:'ROI', feat_weather:'मौसम',
+    feat_store:'आधिकारिक स्टोर', feat_hayati:'पारिस्थितिकी', feat_financial:'वित्त',
+    feat_profile:'प्रोफाइल', feat_notif:'सूचनाएं', feat_settings:'सेटिंग्स',
+    health_title:'AI निदान', health_subtitle:'श्रेणी चुनें',
+    cat_dalam:'आंतरिक रोग', cat_luar:'बाहरी रोग', cat_cerna:'पाचन',
+    cat_repro:'प्रजनन', cat_nafas:'श्वसन', cat_nutrisi:'पोषण',
+    btn_analyze:'AI से विश्लेषण',
+    ai_title:'OMEGA इंटेलिजेंस', ai_placeholder:'Omega AI से पूछें...',
+    settings_eye:'वैश्विक सेटिंग्स', settings_title:'सेटिंग्स',
+    settings_akun:'खाता', settings_sub:'सदस्यता', settings_notif_title:'सूचनाएं',
+    settings_tampilan:'प्रदर्शन', settings_lokasi:'डिफ़ॉल्ट स्थान',
+    btn_save_settings:'सेटिंग्स सहेजें', btn_logout:'साइन आउट',
+    mon_eye:'ओमनी-मॉनिटर', mkt_eye:'बाजार इंटेलिजेंस',
+    ann_eye:'स्मार्ट ROI ऑप्टिमाइज़र', btn_calc_roi:'⚡ ROI गणना + AI विश्लेषण',
+    wx_eye:'मौसम और भू-बुद्धिमत्ता', geo_eye:'भू-बुद्धिमत्ता',
+    prf_omega_eye:'OMEGA सुविधाएं', prf_soon_eye:'जल्द आ रहा है',
+    btn_edit_profile:'✏️ प्रोफाइल संपादित करें',
+    btn_login:'साइन इन', btn_forgot:'पासवर्ड भूल गए?', btn_google:'Google से साइन इन',
+    reg_title:'नया खाता बनाएं', btn_register:'खाता बनाएं',
+    ai_lang_instruction:'हिंदी में जवाब दें।'
+  },
+  pt: {
+    nav_dash:'Painel', nav_monitor:'Monitor', nav_market:'Mercado', nav_health:'Saúde', nav_ai:'IA',
+    dash_fitur:'RECURSOS', dash_omega_ai:'OMEGA IA',
+    feat_marketplace:'Mercado', feat_annuity:'ROI Anuidade', feat_weather:'Clima & Geo',
+    feat_store:'Loja Oficial', feat_hayati:'Ecossistema', feat_financial:'Finanças',
+    feat_profile:'Perfil', feat_notif:'Notificações', feat_settings:'Configurações',
+    health_title:'Diagnóstico IA', health_subtitle:'Selecione a categoria',
+    cat_dalam:'Doença Interna', cat_luar:'Doença Externa', cat_cerna:'Digestivo',
+    cat_repro:'Reprodutivo', cat_nafas:'Respiratório', cat_nutrisi:'Nutrição',
+    btn_analyze:'Analisar com IA',
+    ai_title:'OMEGA INTELIGÊNCIA', ai_placeholder:'Pergunte ao Omega IA...',
+    settings_eye:'CONFIGURAÇÕES GLOBAIS', settings_title:'Configurações',
+    settings_akun:'CONTA', settings_sub:'ASSINATURA', settings_notif_title:'NOTIFICAÇÕES',
+    settings_tampilan:'EXIBIÇÃO', settings_lokasi:'LOCALIZAÇÃO PADRÃO',
+    btn_save_settings:'Salvar configurações', btn_logout:'Sair',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'INTELIGÊNCIA DE MERCADO',
+    ann_eye:'OTIMIZADOR DE ANUIDADE', btn_calc_roi:'⚡ Calcular ROI + Análise IA',
+    wx_eye:'INTELIGÊNCIA CLIMA & GEO', geo_eye:'INTELIGÊNCIA GEOGRÁFICA',
+    prf_omega_eye:'RECURSOS OMEGA', prf_soon_eye:'EM BREVE',
+    btn_edit_profile:'✏️ Editar perfil',
+    btn_login:'Entrar', btn_forgot:'Esqueceu a senha?', btn_google:'Entrar com Google',
+    reg_title:'CRIAR NOVA CONTA', btn_register:'Criar conta',
+    ai_lang_instruction:'Responda em português.'
+  },
+  ru: {
+    nav_dash:'Панель', nav_monitor:'Монитор', nav_market:'Рынок', nav_health:'Здоровье', nav_ai:'ИИ',
+    dash_fitur:'ФУНКЦИИ', dash_omega_ai:'OMEGA ИИ',
+    feat_marketplace:'Рынок', feat_annuity:'ROI', feat_weather:'Погода',
+    feat_store:'Официальный магазин', feat_hayati:'Экосистема', feat_financial:'Финансы',
+    feat_profile:'Профиль', feat_notif:'Уведомления', feat_settings:'Настройки',
+    health_title:'Диагноз ИИ', health_subtitle:'Выберите категорию',
+    cat_dalam:'Внутренние болезни', cat_luar:'Внешние болезни', cat_cerna:'Пищеварение',
+    cat_repro:'Репродукция', cat_nafas:'Дыхание', cat_nutrisi:'Питание',
+    btn_analyze:'Анализ ИИ',
+    ai_title:'OMEGA ИНТЕЛЛЕКТ', ai_placeholder:'Спросите Omega ИИ...',
+    settings_eye:'ГЛОБАЛЬНЫЕ НАСТРОЙКИ', settings_title:'Настройки',
+    settings_akun:'АККАУНТ', settings_sub:'ПОДПИСКА', settings_notif_title:'УВЕДОМЛЕНИЯ',
+    settings_tampilan:'ОТОБРАЖЕНИЕ', settings_lokasi:'МЕСТОПОЛОЖЕНИЕ ПО УМОЛЧАНИЮ',
+    btn_save_settings:'Сохранить настройки', btn_logout:'Выйти',
+    mon_eye:'ОМНИ-МОНИТОР', mkt_eye:'РЫНОЧНАЯ РАЗВЕДКА',
+    ann_eye:'ОПТИМИЗАТОР ROI', btn_calc_roi:'⚡ Рассчитать ROI + Анализ ИИ',
+    wx_eye:'ПОГОДА И ГЕО ИНТЕЛЛЕКТ', geo_eye:'ГЕОИНТЕЛЛЕКТ',
+    prf_omega_eye:'ФУНКЦИИ OMEGA', prf_soon_eye:'СКОРО',
+    btn_edit_profile:'✏️ Редактировать профиль',
+    btn_login:'Войти', btn_forgot:'Забыли пароль?', btn_google:'Войти через Google',
+    reg_title:'СОЗДАТЬ НОВЫЙ АККАУНТ', btn_register:'Создать аккаунт',
+    ai_lang_instruction:'Отвечай на русском языке.'
+  },
+  de: {
+    nav_dash:'Dashboard', nav_monitor:'Monitor', nav_market:'Markt', nav_health:'Gesundheit', nav_ai:'KI',
+    dash_fitur:'FUNKTIONEN', dash_omega_ai:'OMEGA KI',
+    feat_marketplace:'Markt', feat_annuity:'ROI Rente', feat_weather:'Wetter & Geo',
+    feat_store:'Offizieller Shop', feat_hayati:'Ökosystem', feat_financial:'Finanzen',
+    feat_profile:'Profil', feat_notif:'Benachrichtigungen', feat_settings:'Einstellungen',
+    health_title:'KI-Diagnose', health_subtitle:'Kategorie wählen',
+    cat_dalam:'Innere Krankheit', cat_luar:'Äußere Krankheit', cat_cerna:'Verdauung',
+    cat_repro:'Fortpflanzung', cat_nafas:'Atmung', cat_nutrisi:'Ernährung',
+    btn_analyze:'Mit KI analysieren',
+    ai_title:'OMEGA INTELLIGENZ', ai_placeholder:'Fragen Sie Omega KI...',
+    settings_eye:'GLOBALE EINSTELLUNGEN', settings_title:'Einstellungen',
+    settings_akun:'KONTO', settings_sub:'ABONNEMENT', settings_notif_title:'BENACHRICHTIGUNGEN',
+    settings_tampilan:'ANZEIGE', settings_lokasi:'STANDARDSTANDORT',
+    btn_save_settings:'Einstellungen speichern', btn_logout:'Abmelden',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'MARKTINTELLIGENZ',
+    ann_eye:'ROI-OPTIMIERER', btn_calc_roi:'⚡ ROI berechnen + KI-Analyse',
+    wx_eye:'WETTER- & GEO-INTELLIGENZ', geo_eye:'GEOINTELLIGENZ',
+    prf_omega_eye:'OMEGA-FUNKTIONEN', prf_soon_eye:'DEMNÄCHST',
+    btn_edit_profile:'✏️ Profil bearbeiten',
+    btn_login:'Anmelden', btn_forgot:'Passwort vergessen?', btn_google:'Mit Google anmelden',
+    reg_title:'NEUES KONTO ERSTELLEN', btn_register:'Konto erstellen',
+    ai_lang_instruction:'Antworte auf Deutsch.'
+  },
+  ja: {
+    nav_dash:'ダッシュ', nav_monitor:'モニター', nav_market:'市場', nav_health:'健康', nav_ai:'AI',
+    dash_fitur:'機能', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'市場', feat_annuity:'ROI', feat_weather:'天気',
+    feat_store:'公式ストア', feat_hayati:'エコシステム', feat_financial:'金融',
+    feat_profile:'プロフィール', feat_notif:'通知', feat_settings:'設定',
+    health_title:'AI診断', health_subtitle:'症状カテゴリを選択',
+    cat_dalam:'内科疾患', cat_luar:'外科疾患', cat_cerna:'消化器',
+    cat_repro:'生殖器', cat_nafas:'呼吸器', cat_nutrisi:'栄養',
+    btn_analyze:'AIで分析',
+    ai_title:'OMEGA インテリジェンス', ai_placeholder:'Omega AIに質問...',
+    settings_eye:'グローバル設定', settings_title:'設定',
+    settings_akun:'アカウント', settings_sub:'サブスクリプション', settings_notif_title:'通知',
+    settings_tampilan:'ディスプレイ', settings_lokasi:'デフォルトの場所',
+    btn_save_settings:'設定を保存', btn_logout:'サインアウト',
+    mon_eye:'オムニモニター', mkt_eye:'マーケットインテリジェンス',
+    ann_eye:'スマートROIオプティマイザー', btn_calc_roi:'⚡ ROI計算 + AI分析',
+    wx_eye:'天気・地理インテリジェンス', geo_eye:'地理インテリジェンス',
+    prf_omega_eye:'OMEGA機能', prf_soon_eye:'近日公開',
+    btn_edit_profile:'✏️ プロフィール編集',
+    btn_login:'サインイン', btn_forgot:'パスワードを忘れた？', btn_google:'Googleでサインイン',
+    reg_title:'新規アカウント作成', btn_register:'アカウント作成',
+    ai_lang_instruction:'日本語で答えてください。'
+  },
+  ko: {
+    nav_dash:'대시보드', nav_monitor:'모니터', nav_market:'시장', nav_health:'건강', nav_ai:'AI',
+    dash_fitur:'기능', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'시장', feat_annuity:'ROI', feat_weather:'날씨',
+    feat_store:'공식 스토어', feat_hayati:'생태계', feat_financial:'금융',
+    feat_profile:'프로필', feat_notif:'알림', feat_settings:'설정',
+    health_title:'AI 진단', health_subtitle:'증상 카테고리 선택',
+    cat_dalam:'내과 질환', cat_luar:'외과 질환', cat_cerna:'소화기',
+    cat_repro:'생식기', cat_nafas:'호흡기', cat_nutrisi:'영양',
+    btn_analyze:'AI로 분석',
+    ai_title:'OMEGA 인텔리전스', ai_placeholder:'Omega AI에게 물어보기...',
+    settings_eye:'글로벌 설정', settings_title:'설정',
+    settings_akun:'계정', settings_sub:'구독', settings_notif_title:'알림',
+    settings_tampilan:'디스플레이', settings_lokasi:'기본 위치',
+    btn_save_settings:'설정 저장', btn_logout:'로그아웃',
+    mon_eye:'옴니 모니터', mkt_eye:'시장 인텔리전스',
+    ann_eye:'스마트 ROI 최적화', btn_calc_roi:'⚡ ROI 계산 + AI 분석',
+    wx_eye:'날씨 & 지리 인텔리전스', geo_eye:'지리 인텔리전스',
+    prf_omega_eye:'OMEGA 기능', prf_soon_eye:'출시 예정',
+    btn_edit_profile:'✏️ 프로필 편집',
+    btn_login:'로그인', btn_forgot:'비밀번호 잊었나요?', btn_google:'Google로 로그인',
+    reg_title:'새 계정 만들기', btn_register:'계정 만들기',
+    ai_lang_instruction:'\ud55c\uad6d\uc5b4\ub85c \ub300\ub2f5\ud574\uc8fc\uc138\uc694.'
+  },
+  tr: {
+    nav_dash:'Panel', nav_monitor:'Monitör', nav_market:'Pazar', nav_health:'Sağlık', nav_ai:'YZ',
+    dash_fitur:'ÖZELLİKLER', dash_omega_ai:'OMEGA YZ',
+    feat_marketplace:'Pazar', feat_annuity:'ROI', feat_weather:'Hava & Geo',
+    feat_store:'Resmi Mağaza', feat_hayati:'Ekosistem', feat_financial:'Finans',
+    feat_profile:'Profil', feat_notif:'Bildirimler', feat_settings:'Ayarlar',
+    health_title:'YZ Teşhisi', health_subtitle:'Kategori seçin',
+    cat_dalam:'İç Hastalık', cat_luar:'Dış Hastalık', cat_cerna:'Sindirim',
+    cat_repro:'Üreme', cat_nafas:'Solunum', cat_nutrisi:'Beslenme',
+    btn_analyze:'YZ ile Analiz',
+    ai_title:'OMEGA ZEKASI', ai_placeholder:"Omega YZ'ye sorun...",
+    settings_eye:'GLOBAL AYARLAR', settings_title:'Ayarlar',
+    settings_akun:'HESAP', settings_sub:'ABONELİK', settings_notif_title:'BİLDİRİMLER',
+    settings_tampilan:'GÖRÜNÜM', settings_lokasi:'VARSAYILAN KONUM',
+    btn_save_settings:'Ayarları kaydet', btn_logout:'Çıkış yap',
+    mon_eye:'OMNİ-MONITOR', mkt_eye:'PAZAR İSTİHBARATI',
+    ann_eye:'ROI OPTİMİZATÖRÜ', btn_calc_roi:'⚡ ROI Hesapla + YZ Analizi',
+    wx_eye:'HAVA & GEO İSTİHBARATI', geo_eye:'COĞRAFİ İSTİHBARAT',
+    prf_omega_eye:'OMEGA ÖZELLİKLERİ', prf_soon_eye:'YAKINDA',
+    btn_edit_profile:'✏️ Profili düzenle',
+    btn_login:'Giriş yap', btn_forgot:'Şifremi unuttum?', btn_google:'Google ile giriş',
+    reg_title:'YENİ HESAP OLUŞTUR', btn_register:'Hesap oluştur',
+    ai_lang_instruction:'Türkçe cevap ver.'
+  },
+  vi: {
+    nav_dash:'Bảng', nav_monitor:'Giám sát', nav_market:'Thị trường', nav_health:'Sức khỏe', nav_ai:'AI',
+    dash_fitur:'TÍNH NĂNG', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Thị trường', feat_annuity:'ROI', feat_weather:'Thời tiết',
+    feat_store:'Cửa hàng', feat_hayati:'Hệ sinh thái', feat_financial:'Tài chính',
+    feat_profile:'Hồ sơ', feat_notif:'Thông báo', feat_settings:'Cài đặt',
+    health_title:'Chẩn đoán AI', health_subtitle:'Chọn danh mục triệu chứng',
+    cat_dalam:'Bệnh nội khoa', cat_luar:'Bệnh ngoại khoa', cat_cerna:'Tiêu hóa',
+    cat_repro:'Sinh sản', cat_nafas:'Hô hấp', cat_nutrisi:'Dinh dưỡng',
+    btn_analyze:'Phân tích AI',
+    ai_title:'OMEGA THÔNG MINH', ai_placeholder:'Hỏi Omega AI...',
+    settings_eye:'CÀI ĐẶT TOÀN CẦU', settings_title:'Cài đặt',
+    settings_akun:'TÀI KHOẢN', settings_sub:'ĐĂNG KÝ', settings_notif_title:'THÔNG BÁO',
+    settings_tampilan:'HIỂN THỊ', settings_lokasi:'VỊ TRÍ MẶC ĐỊNH',
+    btn_save_settings:'Lưu cài đặt', btn_logout:'Đăng xuất',
+    mon_eye:'GIÁM SÁT TOÀN DIỆN', mkt_eye:'THÔNG TIN THỊ TRƯỜNG',
+    ann_eye:'TỐI ƯU HÓA ROI', btn_calc_roi:'⚡ Tính ROI + Phân tích AI',
+    wx_eye:'THÔNG TIN THỜI TIẾT & ĐỊA LÝ', geo_eye:'THÔNG TIN ĐỊA LÝ',
+    prf_omega_eye:'TÍNH NĂNG OMEGA', prf_soon_eye:'SẮP RA MẮT',
+    btn_edit_profile:'✏️ Chỉnh sửa hồ sơ',
+    btn_login:'Đăng nhập', btn_forgot:'Quên mật khẩu?', btn_google:'Đăng nhập Google',
+    reg_title:'TẠO TÀI KHOẢN MỚI', btn_register:'Tạo tài khoản',
+    ai_lang_instruction:'Trả lời bằng tiếng Việt.'
+  },
+  tl: {
+    nav_dash:'Dashboard', nav_monitor:'Monitor', nav_market:'Merkado', nav_health:'Kalusugan', nav_ai:'AI',
+    dash_fitur:'MGA TAMPOK', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Merkado', feat_annuity:'ROI', feat_weather:'Panahon',
+    feat_store:'Opisyal na Tindahan', feat_hayati:'Ekosistema', feat_financial:'Pinansyal',
+    feat_profile:'Profile', feat_notif:'Mga Abiso', feat_settings:'Mga Setting',
+    health_title:'AI Diagnosis', health_subtitle:'Pumili ng kategorya',
+    cat_dalam:'Panloob na Sakit', cat_luar:'Panlabas na Sakit', cat_cerna:'Digestive',
+    cat_repro:'Reproductive', cat_nafas:'Respiratory', cat_nutrisi:'Nutrisyon',
+    btn_analyze:'Suriin gamit AI',
+    ai_title:'OMEGA KATALINUHAN', ai_placeholder:'Magtanong sa Omega AI...',
+    settings_eye:'PANDAIGDIGANG SETTING', settings_title:'Mga Setting',
+    settings_akun:'ACCOUNT', settings_sub:'SUBSCRIPTION', settings_notif_title:'MGA ABISO',
+    settings_tampilan:'DISPLAY', settings_lokasi:'DEFAULT NA LOKASYON',
+    btn_save_settings:'I-save ang setting', btn_logout:'Mag-sign out',
+    mon_eye:'OMNI-MONITOR', mkt_eye:'MARKET INTELLIGENCE',
+    ann_eye:'SMART ROI OPTIMIZER', btn_calc_roi:'⚡ Kalkulahin ROI + AI Analysis',
+    wx_eye:'PANAHON & GEO INTELLIGENCE', geo_eye:'GEO INTELLIGENCE',
+    prf_omega_eye:'MGA TAMPOK NG OMEGA', prf_soon_eye:'PAPARATING',
+    btn_edit_profile:'✏️ I-edit ang Profile',
+    btn_login:'Mag-sign in', btn_forgot:'Nakalimutan ang password?', btn_google:'Mag-sign in gamit Google',
+    reg_title:'GUMAWA NG BAGONG ACCOUNT', btn_register:'Gumawa ng Account',
+    ai_lang_instruction:'Sagutin sa Filipino.'
+  },
+  bn: {
+    nav_dash:'ড্যাশবোর্ড', nav_monitor:'মনিটর', nav_market:'বাজার', nav_health:'স্বাস্থ্য', nav_ai:'AI',
+    dash_fitur:'বৈশিষ্ট্যসমূহ', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'বাজার', feat_annuity:'ROI', feat_weather:'আবহাওয়া',
+    feat_store:'অফিসিয়াল স্টোর', feat_hayati:'বাস্তুতন্ত্র', feat_financial:'অর্থায়ন',
+    feat_profile:'প্রোফাইল', feat_notif:'বিজ্ঞপ্তি', feat_settings:'সেটিংস',
+    health_title:'AI রোগ নির্ণয়', health_subtitle:'শ্রেণী বেছে নিন',
+    cat_dalam:'অভ্যন্তরীণ রোগ', cat_luar:'বাহ্যিক রোগ', cat_cerna:'হজম',
+    cat_repro:'প্রজনন', cat_nafas:'শ্বাসযন্ত্র', cat_nutrisi:'পুষ্টি',
+    btn_analyze:'AI দিয়ে বিশ্লেষণ',
+    ai_title:'OMEGA ইন্টেলিজেন্স', ai_placeholder:'Omega AI-কে জিজ্ঞেস করুন...',
+    settings_eye:'গ্লোবাল সেটিংস', settings_title:'সেটিংস',
+    settings_akun:'অ্যাকাউন্ট', settings_sub:'সাবস্ক্রিপশন', settings_notif_title:'বিজ্ঞপ্তি',
+    settings_tampilan:'ডিসপ্লে', settings_lokasi:'ডিফল্ট অবস্থান',
+    btn_save_settings:'সেটিংস সংরক্ষণ', btn_logout:'সাইন আউট',
+    mon_eye:'ওমনি-মনিটর', mkt_eye:'বাজার বুদ্ধিমত্তা',
+    ann_eye:'স্মার্ট ROI অপ্টিমাইজার', btn_calc_roi:'⚡ ROI গণনা + AI বিশ্লেষণ',
+    wx_eye:'আবহাওয়া ও ভূ-বুদ্ধিমত্তা', geo_eye:'ভূ-বুদ্ধিমত্তা',
+    prf_omega_eye:'OMEGA বৈশিষ্ট্য', prf_soon_eye:'শীঘ্রই আসছে',
+    btn_edit_profile:'✏️ প্রোফাইল সম্পাদনা',
+    btn_login:'সাইন ইন', btn_forgot:'পাসওয়ার্ড ভুলে গেছেন?', btn_google:'Google দিয়ে সাইন ইন',
+    reg_title:'নতুন অ্যাকাউন্ট তৈরি করুন', btn_register:'অ্যাকাউন্ট তৈরি করুন',
+    ai_lang_instruction:'বাংলায় উত্তর দিন।'
+  },
+  sw: {
+    nav_dash:'Dashibodi', nav_monitor:'Mfuatiliaji', nav_market:'Soko', nav_health:'Afya', nav_ai:'AI',
+    dash_fitur:'VIPENGELE', dash_omega_ai:'OMEGA AI',
+    feat_marketplace:'Soko', feat_annuity:'ROI', feat_weather:'Hali ya Hewa',
+    feat_store:'Duka Rasmi', feat_hayati:'Mfumo wa Ikolojia', feat_financial:'Fedha',
+    feat_profile:'Wasifu', feat_notif:'Arifa', feat_settings:'Mipangilio',
+    health_title:'Utambuzi wa AI', health_subtitle:'Chagua kategoria',
+    cat_dalam:'Ugonjwa wa Ndani', cat_luar:'Ugonjwa wa Nje', cat_cerna:'Usagaji',
+    cat_repro:'Uzazi', cat_nafas:'Upumuaji', cat_nutrisi:'Lishe',
+    btn_analyze:'Changanua na AI',
+    ai_title:'OMEGA AKILI', ai_placeholder:'Uliza Omega AI...',
+    settings_eye:'MIPANGILIO YA KIMATAIFA', settings_title:'Mipangilio',
+    settings_akun:'AKAUNTI', settings_sub:'USAJILI', settings_notif_title:'ARIFA',
+    settings_tampilan:'ONYESHO', settings_lokasi:'MAHALI PA KAWAIDA',
+    btn_save_settings:'Hifadhi mipangilio', btn_logout:'Toka',
+    mon_eye:'OMNI-MFUATILIAJI', mkt_eye:'AKILI YA SOKO',
+    ann_eye:'KUBORESHA ROI', btn_calc_roi:'⚡ Hesabu ROI + Uchambuzi AI',
+    wx_eye:'AKILI YA HALI YA HEWA & GEO', geo_eye:'AKILI YA GEO',
+    prf_omega_eye:'VIPENGELE VYA OMEGA', prf_soon_eye:'HIVI KARIBUNI',
+    btn_edit_profile:'✏️ Hariri wasifu',
+    btn_login:'Ingia', btn_forgot:'Umesahau nywila?', btn_google:'Ingia na Google',
+    reg_title:'FUNGUA AKAUNTI MPYA', btn_register:'Fungua akaunti',
+    ai_lang_instruction:'Jibu kwa Kiswahili.'
+  }
+};
+
+function applyLang(lang) {
+  currentLang = lang;
+  var s = I18N[lang] || I18N['id'];
+  
+  // Apply all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (s[key]) el.textContent = s[key];
+  });
+  
+  // Apply placeholder
+  var ctinp = document.getElementById('ctinp');
+  if (ctinp && s.ai_placeholder) ctinp.placeholder = s.ai_placeholder;
+  
+  // Update lang select to reflect current
+  var langEl = document.getElementById('set-lang');
+  if (langEl) langEl.value = lang;
+  
+  // Save to localStorage
+  try {
+    var raw = JSON.parse(localStorage.getItem('ternakos_settings') || '{}');
+    raw.lang = lang;
+    localStorage.setItem('ternakos_settings', JSON.stringify(raw));
+  } catch(e) {}
+  
+  // Update document direction for RTL languages
+  document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+}
+
+function getLangInstruction() {
+  var s = I18N[currentLang] || I18N['id'];
+  return s.ai_lang_instruction || 'Jawab dalam Bahasa Indonesia.';
+}
+
+
+// ── GEO TIER VISIBILITY ──
+function updateGeoByTier(tier) {
+  var locked = document.getElementById('geo-locked');
+  var content = document.getElementById('geo-content');
+  if (!locked || !content) return;
+
+  if (tier === 'BASIC') {
+    locked.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  locked.style.display = 'none';
+  content.style.display = 'grid';
+
+  // PRO: show basic only
+  // EXCLUSIVE: show basic + some full
+  // OMEGA: show all full
+  var basicIds = ['geo-topo-basic','geo-air-basic','geo-risk-basic','geo-wabah-basic','geo-tanam-basic','geo-udara-basic'];
+  var fullIds = ['geo-topo-full','geo-air-full','geo-risk-full','geo-wabah-full','geo-tanam-full','geo-udara-full'];
+
+  if (tier === 'PRO') {
+    basicIds.forEach(function(id) { var e = document.getElementById(id); if (e) e.style.display = 'block'; });
+    fullIds.forEach(function(id) { var e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  } else if (tier === 'EXCLUSIVE') {
+    // Show full for first 3, basic for last 3
+    basicIds.forEach(function(id, i) { var e = document.getElementById(id); if (e) e.style.display = i < 3 ? 'none' : 'block'; });
+    fullIds.forEach(function(id, i) { var e = document.getElementById(id); if (e) e.style.display = i < 3 ? 'block' : 'none'; });
+  } else { // OMEGA
+    basicIds.forEach(function(id) { var e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    fullIds.forEach(function(id) { var e = document.getElementById(id); if (e) e.style.display = 'block'; });
+  }
+}
+
+// ── FORECAST TIER VISIBILITY ──
+function updateForecastByTier(tier) {
+  var locked = document.getElementById('forecast-locked');
+  var fc = document.getElementById('wx-forecast');
+  if (!locked || !fc) return;
+  if (tier === 'OMEGA') {
+    locked.style.display = 'none';
+    fc.style.display = 'flex';
+  } else {
+    locked.style.display = 'block';
+    fc.style.display = 'none';
+  }
+}
+
+// ── GEOLOCATION ──
+function getMyLocation() {
+  if (!navigator.geolocation) { T('Browser tidak support geolokasi'); return; }
+  T('Mendeteksi lokasi...');
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(4);
+    var lon = pos.coords.longitude.toFixed(4);
+    // Reverse geocode using wttr.in format
+    fetch('/api/weather?lat=' + lat + '&lon=' + lon)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.error) {
+          var locEl = document.getElementById('set-location');
+          if (locEl) locEl.value = lat + ',' + lon;
+          T('✅ Lokasi terdeteksi!');
+          // Reload weather with new location
+          loadWeather();
+        }
+      }).catch(function() { T('Gagal deteksi lokasi'); });
+  }, function() { T('Akses lokasi ditolak'); });
+}
+
+// ── INIT ──
+RA();
+RL();
+buildChart();
+loadSettings();
+var _initTier = (document.querySelector('.ntier') || {}).textContent || 'OMEGA';
+updateGeoByTier(_initTier);
+updateForecastByTier(_initTier);
+
+// Load real weather from wttr.in via Vercel
+function loadWeather() {
+  // Get location from settings or default
+  var loc = 'Mojosari, Mojokerto';
+  try {
+    var s = JSON.parse(localStorage.getItem('ternakos_settings') || '{}');
+    if (s.location) loc = s.location;
+  } catch(e) {}
+
+  var city = loc.split(',')[0].trim();
+  fetch('/api/weather?city=' + encodeURIComponent(city))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d || d.error) return;
+      function wi(desc) {
+        var dl = (desc||'').toLowerCase();
+        if (dl.includes('sunny')||dl.includes('cerah')) return '☀️';
+        if (dl.includes('rain')||dl.includes('hujan')) return '🌧';
+        if (dl.includes('thunder')||dl.includes('petir')) return '⛈';
+        if (dl.includes('cloud')||dl.includes('berawan')) return '☁️';
+        if (dl.includes('haze')||dl.includes('kabut')) return '🌫';
+        if (dl.includes('fog')) return '🌁';
+        return '⛅';
+      }
+      var te = document.getElementById('wx-temp');
+      var de = document.getElementById('wx-desc');
+      var fe = document.getElementById('wx-feels');
+      var we = document.getElementById('wx-wind');
+      var le = document.getElementById('wx-loc');
+      if (te) te.textContent = d.temp + '°C';
+      if (de) de.textContent = wi(d.desc) + ' ' + d.desc + ' · ' + d.humidity + '% RH';
+      if (fe) fe.textContent = 'Terasa ' + d.feels_like + '°C';
+      if (we) we.textContent = '💨 ' + d.wind_kmph + ' km/j';
+      if (le) le.textContent = '📍 ' + loc;
+
+      // Render 5-day forecast
+      var fc = document.getElementById('wx-forecast');
+      if (fc && d.forecast) {
+        var dayNames = ['Hari ini','Besok','Lusa','4 Hari','5 Hari'];
+        fc.innerHTML = d.forecast.map(function(f, i) {
+          return '<div class="fc">' +
+            '<div style="font-size:9px;color:var(--t2)">' + (dayNames[i] || '') + '</div>' +
+            '<div style="font-size:19px;margin:4px 0">' + wi(f.desc) + '</div>' +
+            '<div style="font-size:11px;font-weight:600">' + f.max + '°C</div>' +
+            '<div style="font-size:9px;color:var(--t2)">' + f.min + '°C</div>' +
+            '</div>';
+        }).join('');
+      }
+
+      // AI Weather Analysis
+      var aiBox = document.getElementById('wx-ai-content');
+      if (aiBox) {
+        var forecastSummary = d.forecast ? d.forecast.map(function(f, i) {
+          return (i === 0 ? 'Hari ini' : 'Hari ke-' + (i+1)) + ': ' + f.desc + ', max ' + f.max + '°C min ' + f.min + '°C';
+        }).join('; ') : '';
+
+        var wxPrompt = 'Kamu adalah Omega Intelligence, AI konsultan agrikultur TernakOS. Berikan analisa cuaca dan rekomendasi pertanian/peternakan berdasarkan data berikut:\n\nLokasi: ' + loc + '\nCuaca saat ini: ' + d.desc + ', ' + d.temp + '\u00b0C, Terasa ' + d.feels_like + '\u00b0C, Kelembapan ' + d.humidity + '%, Angin ' + d.wind_kmph + ' km/j\nPrakiraan 5 hari: ' + forecastSummary + '\n\nBerikan:\n1. Dampak cuaca ini pada ternak dan tanaman\n2. Tindakan yang perlu dilakukan peternak/petani hari ini\n3. Peringatan khusus jika ada risiko\n4. Waktu optimal untuk aktivitas luar\n\nJawab singkat, praktis, dalam Bahasa Indonesia.';
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ messages: [{role:'system', content: getLangInstruction()}, {role: 'user', content: wxPrompt}], max_tokens: 600 })
+        }).then(function(r) { return r.json(); })
+          .then(function(ad) {
+            var aiText = (ad.choices && ad.choices[0] && ad.choices[0].message) ? ad.choices[0].message.content : '';
+            if (aiText && aiBox) {
+              aiBox.innerHTML = (typeof marked !== 'undefined') ? marked.parse(aiText) : aiText.replace(/\n/g,'<br>');
+            }
+          }).catch(function() {
+            if (aiBox) aiBox.textContent = 'Analisa AI tidak tersedia saat ini.';
+          });
+      }
+    }).catch(function() {
+      var te = document.getElementById('wx-temp');
+      if (te) te.textContent = '--°C';
+    });
+}
+loadWeather();
+</script>
+
+<!-- SUB: SETTINGS -->
+<div id="sub-settings" class="sub">
+  <div class="back" onclick="CS('sub-settings')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye"><span data-i18n="settings_eye">PENGATURAN GLOBAL</span></div>
+  <div class="h1" style="margin-bottom:16px"><span data-i18n="settings_title">Settings</span></div>
+
+  <!-- Akun -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px"><span data-i18n="settings_akun">AKUN</span></div>
+  <div class="csrow" style="margin-bottom:6px">
+    <span style="font-size:15px">👤</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Nama Tampilan</div>
+      <div style="font-size:10px;color:var(--t2)" id="set-name-display">—</div>
+    </div>
+    <button onclick="T('Edit profil dalam pengembangan')" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer">Edit</button>
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📧</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Email</div>
+      <div style="font-size:10px;color:var(--t2)" id="set-email-display">—</div>
+    </div>
+  </div>
+
+  <!-- Tier -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px"><span data-i18n="settings_sub">SUBSCRIPTION</span></div>
+  <div class="csrow" style="margin-bottom:6px">
+    <span style="font-size:15px">⭐</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Tier Aktif</div>
+      <div style="font-size:10px;color:var(--gold);font-weight:700" id="set-tier-display">OMEGA</div>
+    </div>
+    <button onclick="OM('m-tier')" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer">Ubah</button>
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📅</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Berlaku Hingga</div>
+      <div style="font-size:10px;color:var(--t2)">31 Maret 2026</div>
+    </div>
+  </div>
+
+  <!-- Notifikasi -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px"><span data-i18n="settings_notif_title">NOTIFIKASI</span></div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🚨</span><span style="font-size:11px;color:var(--t1)">Alert Kesehatan Hewan</span></div>
+    <input type="checkbox" id="set-notif-health" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">📈</span><span style="font-size:11px;color:var(--t1)">Update Harga Pasar</span></div>
+    <input type="checkbox" id="set-notif-market" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:14px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🌤</span><span style="font-size:11px;color:var(--t1)">Peringatan Cuaca Ekstrem</span></div>
+    <input type="checkbox" id="set-notif-weather" style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+
+  <!-- Tampilan -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px"><span data-i18n="settings_tampilan">TAMPILAN</span></div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🌙</span><span style="font-size:11px;color:var(--t1)">Dark Mode</span></div>
+    <input type="checkbox" id="set-dark" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">🌐</span>
+    <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Bahasa</div></div>
+    <select id="set-lang" style="background:var(--s3);border:1px solid var(--b2);color:var(--t1);border-radius:7px;padding:4px 8px;font-size:11px" onchange="applyLang(this.value)">
+      <option value="id">🇮🇩 Indonesia</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="ms">🇲🇾 Melayu</option>
+      <option value="ar">🇸🇦 العربية</option>
+      <option value="zh">🇨🇳 中文</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="pt">🇧🇷 Português</option>
+      <option value="ru">🇷🇺 Русский</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="ja">🇯🇵 日本語</option>
+      <option value="ko">🇰🇷 한국어</option>
+      <option value="tr">🇹🇷 Türkçe</option>
+      <option value="vi">🇻🇳 Tiếng Việt</option>
+      <option value="th">🇹🇭 ภาษาไทย</option>
+      <option value="tl">🇵🇭 Filipino</option>
+      <option value="sw">🇰🇪 Kiswahili</option>
+      <option value="bn">🇧🇩 বাংলা</option>
+    </select>
+  </div>
+
+  <!-- Lokasi Default -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px"><span data-i18n="settings_lokasi">LOKASI DEFAULT</span></div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📍</span>
+    <div style="flex:1"><input class="inp" id="set-location" placeholder="cth: Mojosari, Mojokerto" style="background:transparent;border:none;padding:0;font-size:11px" value="Mojosari, Mojokerto"></div>
+    <button onclick="getMyLocation()" style="padding:6px 10px;border-radius:8px;background:var(--gd);border:1px solid var(--bdr);color:var(--gold);font-size:10px;cursor:pointer;white-space:nowrap">📡 GPS</button>
+  </div>
+
+  <!-- AI -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">OMEGA INTELLIGENCE</div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🤖</span><span style="font-size:11px;color:var(--t1)">Jawaban Mendalam</span></div>
+    <input type="checkbox" id="set-ai-deep" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:20px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">📝</span><span style="font-size:11px;color:var(--t1)">Render Markdown</span></div>
+    <input type="checkbox" id="set-ai-md" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+
+  <button class="btn btn-g" onclick="saveSettings()"><span data-i18n="btn_save_settings">Simpan Pengaturan</span></button>
+  <button class="bout" onclick="doLogout()" style="margin-top:9px">Keluar dari Akun</button>
+</div>
+
+<!-- MODAL: TIER -->
+<div class="modal" id="m-tier" onclick="if(event.target.id==='m-tier')CM('m-tier')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1);margin-bottom:4px">SUBSCRIPTION TIER</div>
+    <div style="font-size:10px;color:var(--t2);margin-bottom:16px">Pilih tier untuk simulasi atau upgrade</div>
+    <div id="tier-list">
+      <div class="csrow" onclick="setTier('BASIC')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:16px">🌱</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--t1)">BASIC <span style="font-size:9px;color:var(--t3)">Gratis</span></div>
+          <div style="font-size:10px;color:var(--t2)">5 hewan · Health 3x/bln · ada iklan</div>
+        </div>
+        <span id="tier-check-BASIC" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('PRO')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,145,168,.15);display:flex;align-items:center;justify-content:center;font-size:16px">⚡</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--cyan)">PRO <span style="font-size:9px;color:var(--t3)">Rp 99rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">Unlimited · Annuity ROI · AI 100 msg/bln</div>
+        </div>
+        <span id="tier-check-PRO" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('EXCLUSIVE')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(124,58,237,.15);display:flex;align-items:center;justify-content:center;font-size:16px">💎</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--pur)">EXCLUSIVE <span style="font-size:9px;color:var(--t3)">Rp 199rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">PRO + QR Tag backup · AI unlimited · Cuaca</div>
+        </div>
+        <span id="tier-check-EXCLUSIVE" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('OMEGA')" style="cursor:pointer;margin-bottom:7px;border-radius:11px;background:var(--gd);border-color:var(--bdr)">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(200,152,26,.15);display:flex;align-items:center;justify-content:center;font-size:16px">Ω</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--gold)">OMEGA <span style="font-size:9px;color:var(--t3)">Rp 499rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">Semua fitur · 5 QR Tag/bln · diskon HW 50%</div>
+        </div>
+        <span id="tier-check-OMEGA" style="color:var(--green)">✓</span>
+      </div>
+    </div>
+    <button class="btn btn-g" style="margin-top:8px" onclick="CM('m-tier')">Tutup</button>
+  </div>
+</div>
+
+<!-- MODAL: NOTIFIKASI -->
+<div class="modal" id="m-notif" onclick="if(event.target.id==='m-notif')CM('m-notif')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1)">NOTIFIKASI</div>
+      <span onclick="clearNotifs()" style="font-size:10px;color:var(--t2);cursor:pointer">Hapus semua</span>
+    </div>
+    <div id="notif-list">
+      <div class="csrow" style="margin-bottom:7px;align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">⚠ Titan — Status DARURAT</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Sapi Simmental kamu memerlukan perhatian segera. Pantau dalam 6-12 jam.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">2 jam lalu</div>
+        </div>
+      </div>
+      <div class="csrow" style="margin-bottom:7px;align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">📈 Harga Kambing Naik 1.8%</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Mendekati puncak pre-Idul Adha. Waktu jual optimal H-21 hingga H-14.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">5 jam lalu</div>
+        </div>
+      </div>
+      <div class="csrow" style="align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">🌧 Peringatan Cuaca</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Hujan lebat diprediksi di Mojokerto besok. Pastikan kandang tertutup.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">8 jam lalu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
