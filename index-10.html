@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>TernakOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#07090D;--s1:#0C1119;--s2:#111820;--s3:#181F2A;
+  --gold:#C8981A;--gold2:#E5B430;--gd:rgba(200,152,26,.1);--gg:rgba(200,152,26,.22);
+  --green:#00B86B;--red:#E03A52;--cyan:#0091A8;--pur:#7C3AED;
+  --t1:#F0F4FF;--t2:#4A5F7A;--t3:#1E2A38;
+  --bdr:rgba(200,152,26,.15);--b2:rgba(255,255,255,.05);
+  --fd:'Orbitron',monospace;--fb:'Syne',sans-serif;--fm:'Space Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);overflow-x:hidden;}
+::-webkit-scrollbar{width:2px;}::-webkit-scrollbar-thumb{background:var(--gold);}
+@keyframes gp{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sh{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes dp{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.scr{display:none;min-height:100vh;}.scr.on{display:block;animation:fi .2s ease;}
+#sc-chat.on{display:flex;flex-direction:column;height:100vh;}
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:52px;display:flex;align-items:center;padding:0 20px;background:rgba(7,9,13,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--b2);}
+.nring{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:12px;color:var(--gold);margin-right:9px;animation:gp 2.5s ease infinite;}
+.ntitle{font-family:var(--fd);font-size:10px;font-weight:700;color:var(--t1);letter-spacing:2px;}
+.ntier{margin-left:auto;font-family:var(--fm);font-size:8px;color:var(--gold);padding:2px 8px;border-radius:8px;border:1px solid rgba(200,152,26,.2);margin-right:10px;}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--s1);border-top:1px solid var(--b2);display:flex;padding:7px 0 12px;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.bn-ic{font-size:18px;line-height:1;}.bn-lb{font-size:8px;color:var(--t3);font-weight:500;}
+.bn.on .bn-lb{color:var(--gold);}
+.pg{padding:60px 20px 76px;}
+.eye{font-family:var(--fm);font-size:9px;color:var(--gold);letter-spacing:3px;margin-bottom:7px;}
+.h1{font-family:var(--fd);font-size:18px;font-weight:900;color:var(--t1);line-height:1.2;}
+.card{background:var(--s2);border-radius:14px;border:1px solid var(--b2);}
+.hr{height:1px;background:var(--b2);margin:18px 0;}
+.btn{padding:13px;border-radius:12px;border:none;width:100%;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-g{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);box-shadow:0 4px 14px var(--gg);}
+.btn-g:active{transform:scale(.98);}
+.btn-o{background:transparent;border:1px solid var(--bdr);color:var(--t2);}
+.inp{width:100%;padding:13px 16px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;color:var(--t1);font-family:var(--fb);font-size:13px;outline:none;}
+.inp:focus{border-color:rgba(200,152,26,.4);}
+select.inp{-webkit-appearance:none;}
+.lbl{font-size:10px;color:var(--t2);margin-bottom:5px;display:block;}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-family:var(--fb);font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.chip.on{background:var(--gd);border-color:var(--bdr);color:var(--gold);}
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--bdr);padding:8px 16px;border-radius:20px;font-size:12px;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
+.toast.on{opacity:1;}
+.modal{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:flex-end;}
+.modal.on{display:flex;}
+.mbox{width:100%;background:var(--s1);border-radius:18px 18px 0 0;padding:20px 20px 32px;border-top:1px solid var(--b2);max-height:86vh;overflow-y:auto;animation:sh .25s cubic-bezier(.16,1,.3,1);}
+.mbar{width:32px;height:3px;border-radius:2px;background:var(--t3);margin:0 auto 16px;}
+.sub{position:fixed;inset:0;z-index:800;background:var(--bg);overflow-y:auto;padding:60px 20px 78px;display:none;}
+.sub.on{display:block;animation:fi .2s ease;}
+.back{display:flex;align-items:center;gap:7px;margin-bottom:20px;cursor:pointer;width:fit-content;}
+/* LOGIN */
+#sc-login{background:radial-gradient(ellipse at 15% 15%,rgba(200,152,26,.07),transparent 55%),var(--bg);}
+.lc{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;}
+.lomega{width:76px;height:76px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:32px;color:var(--gold);margin:0 auto 14px;box-shadow:0 0 28px var(--gg);}
+.lbox{width:100%;max-width:360px;margin-top:24px;}
+.ldiv{display:flex;align-items:center;gap:10px;margin:12px 0;}
+.lline{flex:1;height:1px;background:var(--b2);}
+.lgoog{width:100%;padding:12px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;color:var(--t2);font-family:var(--fb);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;}
+/* DASHBOARD */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.kpi{padding:16px 12px;border-radius:14px;background:var(--s2);border:1px solid var(--b2);}
+.kpi-n{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--kc,var(--t1));margin-top:6px;}
+.kpi-l{font-size:9px;color:var(--t2);margin-top:2px;}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.mitem{padding:16px 10px;border-radius:14px;background:var(--s2);border:1px solid var(--b2);text-align:center;cursor:pointer;transition:all .15s;}
+.mitem:active{background:var(--gd);border-color:var(--bdr);}
+.mic{font-size:20px;margin-bottom:5px;filter:grayscale(15%);}
+.mlb{font-size:9px;color:var(--t2);font-weight:500;}
+.dalert{background:rgba(224,58,82,.07);border:1px solid rgba(224,58,82,.2);border-radius:12px;padding:11px 14px;margin-bottom:24px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;animation:bl 1s infinite;}
+.atx{font-size:11px;color:#E8607A;flex:1;line-height:1.4;}
+.insight{background:var(--s2);border-radius:13px;padding:15px;border:1px solid var(--bdr);}
+/* MONITOR */
+.acard{background:var(--s2);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;border:1px solid var(--b2);border-left:3px solid var(--sc);margin-bottom:9px;}
+.aav{width:42px;height:42px;border-radius:10px;background:var(--bg);border:1.5px solid var(--sc);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:900;color:var(--sc);flex-shrink:0;}
+.fab{position:fixed;bottom:64px;right:18px;z-index:200;padding:11px 17px;border-radius:28px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 5px 16px var(--gg);}
+/* HEALTH */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+.ccat{background:var(--s2);border-radius:13px;padding:14px;border:1px solid var(--b2);cursor:pointer;transition:all .12s;}
+.ccat:active,.ccat.on{background:var(--gd);border-color:var(--bdr);}
+.ssec{display:none;}.ssec.on{display:block;}
+.sg{margin-bottom:12px;}
+.sgl{font-size:10px;color:var(--t2);margin-bottom:5px;font-weight:500;}
+.sgo{display:flex;flex-wrap:wrap;gap:5px;}
+.so{padding:5px 10px;border-radius:9px;border:1px solid var(--b2);background:transparent;color:var(--t2);font-size:10px;cursor:pointer;font-family:var(--fb);transition:all .12s;}
+.so.on{background:rgba(224,58,82,.1);border-color:var(--red);color:var(--red);}
+.ares{border-radius:13px;padding:15px;margin-top:14px;display:none;animation:fi .25s ease;}
+.ares.on{display:block;}
+.vetc{background:var(--s3);border-radius:11px;padding:11px;margin-top:11px;display:flex;align-items:center;gap:9px;border:1px solid var(--b2);}
+.bwa{padding:7px 11px;border-radius:9px;background:rgba(0,184,107,.1);color:var(--green);border:1px solid rgba(0,184,107,.2);font-size:10px;font-weight:600;cursor:pointer;font-family:var(--fb);white-space:nowrap;}
+/* MARKET */
+.phero{padding:18px;border-radius:16px;background:var(--s2);margin-bottom:14px;border:1px solid var(--bdr);}
+.p6{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.pb{background:var(--s2);border-radius:10px;padding:10px;border:1px solid var(--b2);}
+.chbox{background:var(--s2);border-radius:13px;padding:13px;margin-bottom:14px;border:1px solid var(--b2);}
+.cbars{display:flex;align-items:flex-end;gap:3px;height:48px;}
+.cbar{flex:1;border-radius:2px 2px 0 0;background:var(--s3);}
+.cbar.hi{background:linear-gradient(to top,var(--gold),var(--gold2));}
+.clbls{display:flex;gap:3px;margin-top:4px;}
+.commbox{background:var(--s2);border-radius:13px;padding:13px;border:1px solid var(--b2);}
+.cmsg{display:flex;gap:7px;margin-bottom:11px;}
+.cav2{width:26px;height:26px;border-radius:50%;background:var(--s3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.cbbl{background:var(--s3);border-radius:0 10px 10px 10px;padding:8px 10px;flex:1;}
+.cu{font-size:10px;font-weight:600;color:var(--gold);}
+.clc{font-size:8px;color:var(--t3);}
+.ct{font-size:11px;color:var(--t1);margin-top:3px;line-height:1.5;}
+.cir{display:flex;gap:6px;margin-top:9px;}
+.ci{flex:1;padding:8px 12px;background:var(--s3);border:1px solid var(--b2);border-radius:18px;color:var(--t1);font-size:12px;font-family:var(--fb);outline:none;}
+.csnd{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+/* AI CHAT */
+.chdr{padding:10px 20px;background:var(--s1);border-bottom:1px solid var(--b2);}
+.cmsgs{flex:1;overflow-y:auto;padding:13px 20px;display:flex;flex-direction:column;gap:9px;min-height:calc(100vh - 250px);max-height:calc(100vh - 250px);}
+.msys{background:linear-gradient(135deg,var(--gd),rgba(0,145,168,.05));border:1px solid var(--bdr);border-radius:13px;padding:12px;display:flex;gap:7px;}
+.omav{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:9px;color:var(--gold);background:var(--s2);flex-shrink:0;}
+.mu{background:var(--gd);border:1px solid rgba(200,152,26,.15);border-radius:13px 3px 13px 13px;padding:8px 12px;font-size:12px;color:var(--t1);align-self:flex-end;max-width:82%;}
+.marow{display:flex;gap:6px;}
+.ma{background:var(--s2);border:1px solid var(--b2);border-radius:3px 13px 13px 13px;padding:10px 12px;font-size:12px;color:var(--t1);line-height:1.6;flex:1;}
+.mtag{display:inline-block;padding:2px 6px;border-radius:5px;background:var(--gd);color:var(--gold);font-size:8px;margin-top:4px;}
+.dots{display:flex;gap:3px;}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:dp 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}
+.dots span:nth-child(3){animation-delay:.4s;}
+.cbot{padding:9px 20px 13px;background:var(--s1);border-top:1px solid var(--b2);}
+.crow{display:flex;gap:7px;align-items:flex-end;}
+.cta{flex:1;padding:9px 14px;background:var(--s2);border:1px solid var(--b2);border-radius:18px;color:var(--t1);font-family:var(--fb);font-size:13px;outline:none;resize:none;}
+.cta:focus{border-color:rgba(200,152,26,.3);}
+.csend{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);border:none;font-size:13px;cursor:pointer;flex-shrink:0;}
+.csend:disabled{background:var(--s2);color:var(--t3);}
+/* MARKDOWN RENDER */
+.ma h1,.ma h2,.ma h3{font-family:var(--fd);color:var(--gold);margin:10px 0 5px;font-size:12px;letter-spacing:.5px;}
+.ma h4,.ma h5{color:var(--t1);margin:8px 0 4px;font-size:11px;font-weight:600;}
+.ma p{margin:5px 0;line-height:1.7;}
+.ma ul,.ma ol{padding-left:16px;margin:6px 0;}
+.ma li{margin:3px 0;line-height:1.6;}
+.ma strong{color:var(--t1);font-weight:700;}
+.ma em{color:var(--gold);font-style:normal;}
+.ma code{background:var(--s3);padding:1px 5px;border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--cyan);}
+.ma blockquote{border-left:2px solid var(--gold);padding-left:9px;margin:7px 0;color:var(--t2);font-style:italic;}
+.ma hr{border:none;border-top:1px solid var(--b2);margin:9px 0;}
+.ma table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0;}
+.ma th{background:var(--s3);color:var(--gold);padding:5px 7px;text-align:left;border:1px solid var(--b2);}
+.ma td{padding:5px 7px;border:1px solid var(--b2);color:var(--t2);}
+/* MARKDOWN RENDER */
+.ma h1,.ma h2,.ma h3{font-family:var(--fd);color:var(--gold);margin:10px 0 5px;font-size:12px;letter-spacing:.5px;}
+.ma p{margin:5px 0;line-height:1.7;}
+.ma ul,.ma ol{padding-left:16px;margin:6px 0;}
+.ma li{margin:3px 0;line-height:1.6;}
+.ma strong{color:var(--t1);font-weight:700;}
+.ma code{background:var(--s3);padding:1px 5px;border-radius:4px;font-family:var(--fm);font-size:10px;color:var(--cyan);}
+.ma blockquote{border-left:2px solid var(--gold);padding-left:9px;margin:7px 0;color:var(--t2);}
+.ma table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0;}
+.ma th{background:var(--s3);color:var(--gold);padding:5px 7px;text-align:left;border:1px solid var(--b2);}
+.ma td{padding:5px 7px;border:1px solid var(--b2);color:var(--t2);}
+/* SUB SCREENS */
+.roinum{font-family:var(--fd);font-size:52px;font-weight:900;text-align:center;line-height:1;}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0;}
+.ri{background:var(--s2);border-radius:11px;padding:12px;border:1px solid var(--b2);}
+.wxbig{background:linear-gradient(135deg,var(--s2),var(--gd));border:1px solid var(--bdr);border-radius:16px;padding:22px;text-align:center;margin-bottom:14px;}
+.fcrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;}
+.fcrow::-webkit-scrollbar{display:none;}
+.fc{background:var(--s2);border-radius:11px;padding:10px;text-align:center;border:1px solid var(--b2);flex-shrink:0;min-width:64px;}
+.geog{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.gi{background:var(--s2);border-radius:11px;padding:12px;border:1px solid var(--b2);}
+.lst{background:var(--s2);border-radius:13px;border:1px solid var(--b2);overflow:hidden;margin-bottom:11px;}
+.limg{height:100px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:42px;position:relative;}
+.lprice{position:absolute;bottom:8px;right:10px;font-family:var(--fd);font-size:12px;font-weight:900;color:var(--green);}
+.lbody{padding:11px 13px;}
+.stgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sprod{background:var(--s2);border-radius:13px;border:1px solid var(--b2);overflow:hidden;cursor:pointer;}
+.sprod:active{border-color:var(--bdr);}
+.spimg{height:82px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:34px;}
+.sp2{grid-column:span 2;}
+.hayg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.hay{background:var(--s2);border-radius:13px;padding:14px;border:1px solid var(--b2);cursor:pointer;}
+.hay:active{border-color:var(--bdr);}
+.csrow{background:var(--s2);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--b2);margin-bottom:6px;}
+.soon{padding:2px 7px;border-radius:7px;background:rgba(124,58,237,.1);color:var(--pur);font-family:var(--fm);font-size:8px;flex-shrink:0;}
+.fincard{background:var(--s2);border-radius:13px;padding:15px;border:1px solid var(--b2);margin-bottom:9px;}
+.phero2{background:linear-gradient(135deg,var(--s2),var(--gd));border:1px solid var(--bdr);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px;}
+.pav{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:22px;color:var(--bg);margin:0 auto 11px;box-shadow:0 0 16px var(--gg);}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.ps{background:var(--s2);border-radius:11px;padding:12px 8px;text-align:center;border:1px solid var(--b2);}
+.irow{background:var(--s2);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:7px;border:1px solid var(--b2);margin-bottom:6px;}
+.frow{background:var(--gd);border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:6px;border:1px solid rgba(200,152,26,.1);margin-bottom:5px;}
+.crow2{background:var(--s2);border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:7px;border:1px dashed var(--b2);margin-bottom:5px;}
+.bout{width:100%;padding:11px;border-radius:11px;border:1px solid rgba(224,58,82,.2);background:transparent;color:var(--red);font-family:var(--fb);font-size:13px;cursor:pointer;margin-top:7px;}
+</style>
+</head>
+<body>
+
+<nav id="nav" style="display:none">
+  <div class="nring">Ω</div>
+  <span class="ntitle">TERNAKOS</span>
+  <div class="ntier" id="nav-tier" onclick="OM('m-tier')" style="cursor:pointer">OMEGA</div>
+  <span onclick="OM('m-notif')" style="font-size:18px;cursor:pointer;position:relative">🔔<span id="notif-dot" style="position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--red);display:none"></span></span>
+</nav>
+<div class="bnav" id="bnav" style="display:none">
+  <div class="bn on" id="bn-dash" onclick="G('dash')"><div class="bn-ic">⚡</div><div class="bn-lb" style="color:var(--gold)">Dasbor</div></div>
+  <div class="bn" id="bn-mon" onclick="G('mon')"><div class="bn-ic">📡</div><div class="bn-lb">Monitor</div></div>
+  <div class="bn" id="bn-mkt" onclick="G('mkt')"><div class="bn-ic">📈</div><div class="bn-lb">Market</div></div>
+  <div class="bn" id="bn-health" onclick="G('health')"><div class="bn-ic">🩺</div><div class="bn-lb">Health</div></div>
+  <div class="bn" id="bn-chat" onclick="G('chat')"><div class="bn-ic">🤖</div><div class="bn-lb">AI</div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="sc-login" class="scr on">
+  <div class="lc">
+    <div class="lomega">Ω</div>
+    <div style="text-align:center">
+      <div style="font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:3px">TERNAKOS</div>
+      <div style="font-size:11px;color:var(--gold);margin-top:4px">The Operating System for Living Ecosystems</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:4px;font-style:italic">Born in Mojosari — Built for the World</div>
+    </div>
+    <div class="lbox">
+      <div id="login-form">
+        <div style="margin-bottom:9px"><label class="lbl">Email</label><input class="inp" id="le" type="email" placeholder="peternak@email.com"></div>
+        <div style="margin-bottom:13px"><label class="lbl">Password</label><input class="inp" id="lp" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-g" onclick="doLogin()">Masuk</button>
+        <div style="text-align:right;margin-top:7px"><span style="font-size:10px;color:var(--gold);cursor:pointer" onclick="doForgot()">Lupa password?</span></div>
+        <div class="ldiv"><div class="lline"></div><div style="font-size:10px;color:var(--t3)">atau</div><div class="lline"></div></div>
+        <button class="lgoog" onclick="doGoogle()"><span style="font-size:14px;font-weight:700;color:#4285F4">G</span> Masuk dengan Google</button>
+        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--t2)">Belum punya akun? <span style="color:var(--gold);cursor:pointer" onclick="showReg()">Daftar</span></div>
+      </div>
+      <div id="reg-form" style="display:none">
+        <div style="font-family:var(--fm);font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:12px">BUAT AKUN BARU</div>
+        <div style="margin-bottom:9px"><label class="lbl">Nama Lengkap</label><input class="inp" id="rn" placeholder="cth: Budi Peternak"></div>
+        <div style="margin-bottom:9px"><label class="lbl">Email</label><input class="inp" id="re" type="email" placeholder="peternak@email.com"></div>
+        <div style="margin-bottom:13px"><label class="lbl">Password (min. 6 karakter)</label><input class="inp" id="rp" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-g" onclick="doReg()">Buat Akun</button>
+        <button class="btn btn-o" style="margin-top:7px" onclick="hideReg()">← Kembali ke Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="sc-dash" class="scr" style="background:radial-gradient(ellipse at 0 0,rgba(200,152,26,.05),transparent 45%),var(--bg)">
+  <div class="pg">
+    <div style="margin-bottom:22px">
+      <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);letter-spacing:.5px" id="dash-greeting">SELAMAT DATANG</div>
+      <div style="font-size:10px;color:var(--gold);margin-top:3px">Mojosari, Mojokerto</div>
+    </div>
+    <div class="dalert" onclick="G('health')">
+      <div class="adot"></div>
+      <div class="atx">Titan — Kondisi DARURAT. Tap untuk tangani.</div>
+      <span style="color:var(--t3);font-size:13px">→</span>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi" style="--kc:var(--green)"><div style="font-size:10px">✦</div><div class="kpi-n">4</div><div class="kpi-l">Sehat</div></div>
+      <div class="kpi" style="--kc:#D4960A"><div style="font-size:10px">⚡</div><div class="kpi-n">1</div><div class="kpi-l">Waspada</div></div>
+      <div class="kpi" style="--kc:var(--red)"><div style="font-size:10px">⚠</div><div class="kpi-n">1</div><div class="kpi-l">Darurat</div></div>
+    </div>
+    <div class="eye">FITUR</div>
+    <div class="mgrid">
+      <div class="mitem" onclick="OS('sub-mktpl')"><div class="mic">🤝</div><div class="mlb">Marketplace</div></div>
+      <div class="mitem" onclick="OS('sub-ann')"><div class="mic">📐</div><div class="mlb">Annuity ROI</div></div>
+      <div class="mitem" onclick="OS('sub-wx')"><div class="mic">🧭</div><div class="mlb">Cuaca & Geo</div></div>
+      <div class="mitem" onclick="OS('sub-store')"><div class="mic">📦</div><div class="mlb">Official Store</div></div>
+      <div class="mitem" onclick="OS('sub-hay')"><div class="mic">🌱</div><div class="mlb">Hayati</div></div>
+      <div class="mitem" onclick="OS('sub-fin')"><div class="mic">🏦</div><div class="mlb">Financial</div></div>
+      <div class="mitem" onclick="OS('sub-prf')"><div class="mic">🪪</div><div class="mlb">Profil</div></div>
+      <div class="mitem" onclick="OS('sub-settings')"><div class="mic">⚙️</div><div class="mlb">Pengaturan</div></div>
+    </div>
+    <div class="hr"></div>
+    <div class="eye">OMEGA AI</div>
+    <div class="insight">
+      <div style="font-size:9px;color:var(--gold);font-weight:600;margin-bottom:6px">★ Insight Hari Ini</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.65">Harga kambing naik 1.8% mendekati puncak pre-Idul Adha. Waktu jual optimal H-21 hingga H-14. Pertimbangkan jual minggu depan jika target profit sudah tercapai.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MONITOR -->
+<div id="sc-mon" class="scr">
+  <div class="pg">
+    <div class="eye">OMNI-MONITOR</div>
+    <div class="h1" style="margin-bottom:3px">Asset Registry</div>
+    <div style="font-size:10px;color:var(--gold);margin-bottom:14px">Real-Time Livestock & Ecosystem Intelligence</div>
+    <div class="chips" id="mf" style="margin-bottom:13px">
+      <button class="chip on" onclick="FA('Semua',this)">Semua</button>
+      <button class="chip" onclick="FA('Sehat',this)">Sehat</button>
+      <button class="chip" onclick="FA('Perlu Perhatian',this)">Waspada</button>
+      <button class="chip" onclick="FA('Darurat',this)">Darurat</button>
+    </div>
+    <div id="alist"></div>
+  </div>
+  <button class="fab" onclick="OM('m-animal')">+ Daftarkan</button>
+</div>
+
+<!-- HEALTH -->
+<div id="sc-health" class="scr">
+  <div class="pg">
+    <div class="eye">HEALTH SCREENING</div>
+    <div class="h1" style="margin-bottom:3px">AI Diagnosis</div>
+    <div style="font-size:10px;color:var(--t2);margin-bottom:16px">Pilih kategori keluhan</div>
+    <div id="hs1">
+      <div class="cgrid">
+        <div class="ccat" onclick="PC('dalam')"><div style="font-size:22px;margin-bottom:6px">🔴</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Penyakit Dalam</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Lesu, tidak mau makan</div></div>
+        <div class="ccat" onclick="PC('luar')"><div style="font-size:22px;margin-bottom:6px">🟡</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Penyakit Luar</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Mata, kulit, kaki</div></div>
+        <div class="ccat" onclick="PC('cerna')"><div style="font-size:22px;margin-bottom:6px">🟠</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Pencernaan</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Kembung, diare</div></div>
+        <div class="ccat" onclick="PC('repro')"><div style="font-size:22px;margin-bottom:6px">🔵</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Reproduksi</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Bunting, melahirkan</div></div>
+        <div class="ccat" onclick="PC('nafas')"><div style="font-size:22px;margin-bottom:6px">🟣</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Pernafasan</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Batuk, sesak</div></div>
+        <div class="ccat" onclick="PC('nutrisi')"><div style="font-size:22px;margin-bottom:6px">⚪</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Nutrisi & Tumbuh</div><div style="font-size:9px;color:var(--t2);margin-top:3px">Kurus, stunting</div></div>
+      </div>
+    </div>
+    <div id="hs2" style="display:none">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+        <button onclick="BC()" style="background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:5px 10px;color:var(--t2);font-size:11px;cursor:pointer">← Kembali</button>
+        <div id="cbadge" style="padding:2px 8px;border-radius:8px;background:var(--gd);color:var(--gold);font-size:10px;font-weight:600"></div>
+      </div>
+      <div id="ss-dalam" class="ssec">
+        <div class="sg"><div class="sgl">Nafsu Makan</div><div class="sgo"><button class="so" onclick="SS(this,'nafsu','ok')">Normal</button><button class="so" onclick="SS(this,'nafsu','kurang')">Berkurang</button><button class="so" onclick="SS(this,'nafsu','tidak')">Tidak mau makan ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Keaktifan</div><div class="sgo"><button class="so" onclick="SS(this,'aktif','ok')">Aktif</button><button class="so" onclick="SS(this,'aktif','lesu')">Sedikit lesu</button><button class="so" onclick="SS(this,'aktif','sangat')">Sangat lesu</button><button class="so" onclick="SS(this,'aktif','diam')">Tidak bergerak ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Kondisi Kepala</div><div class="sgo"><button class="so" onclick="SS(this,'kepala','ok')">Tegak normal</button><button class="so" onclick="SS(this,'kepala','berat')">Mulai berat</button><button class="so" onclick="SS(this,'kepala','tidak')">Tidak bisa tegak ⚠</button></div></div>
+        <div class="sg"><div class="sgl">Kondisi Tubuh</div><div class="sgo"><button class="so" onclick="SS(this,'tubuh','ok')">Berdiri normal</button><button class="so" onclick="SS(this,'tubuh','goyah')">Mulai goyah</button><button class="so" onclick="SS(this,'tubuh','rebah')">Menempel tanah 🚨</button></div></div>
+      </div>
+      <div id="ss-luar" class="ssec">
+        <div class="sg"><div class="sgl">Lokasi</div><div class="sgo"><button class="so" onclick="SS(this,'lok','mata')">Mata</button><button class="so" onclick="SS(this,'lok','kulit')">Kulit</button><button class="so" onclick="SS(this,'lok','kaki')">Kaki</button><button class="so" onclick="SS(this,'lok','luka')">Luka</button></div></div>
+        <div class="sg"><div class="sgl">Sudah Berapa Lama</div><div class="sgo"><button class="so" onclick="SS(this,'dur','baru')">Hari ini</button><button class="so" onclick="SS(this,'dur','23')">2-3 hari</button><button class="so" onclick="SS(this,'dur','minggu')">Seminggu+</button></div></div>
+      </div>
+      <div id="ss-cerna" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi Perut</div><div class="sgo"><button class="so" onclick="SS(this,'perut','ok')">Normal</button><button class="so" onclick="SS(this,'perut','kembung')">Kembung ⚠</button><button class="so" onclick="SS(this,'perut','keras')">Keras</button></div></div>
+        <div class="sg"><div class="sgl">Kotoran</div><div class="sgo"><button class="so" onclick="SS(this,'kot','ok')">Normal</button><button class="so" onclick="SS(this,'kot','cair')">Diare</button><button class="so" onclick="SS(this,'kot','darah')">Berdarah ⚠</button></div></div>
+      </div>
+      <div id="ss-repro" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi</div><div class="sgo"><button class="so" onclick="SS(this,'repro','bunting')">Sedang bunting</button><button class="so" onclick="SS(this,'repro','lahir')">Baru melahirkan</button><button class="so" onclick="SS(this,'repro','masalah')">Masalah kawin</button></div></div>
+      </div>
+      <div id="ss-nafas" class="ssec">
+        <div class="sg"><div class="sgl">Pola Nafas</div><div class="sgo"><button class="so" onclick="SS(this,'nafas','ok')">Normal</button><button class="so" onclick="SS(this,'nafas','cepat')">Cepat</button><button class="so" onclick="SS(this,'nafas','berat')">Berat/sesak ⚠</button></div></div>
+      </div>
+      <div id="ss-nutrisi" class="ssec">
+        <div class="sg"><div class="sgl">Kondisi Fisik</div><div class="sgo"><button class="so" onclick="SS(this,'fisik','ok')">Normal</button><button class="so" onclick="SS(this,'fisik','kurus')">Kurus</button><button class="so" onclick="SS(this,'fisik','kusam')">Kusam</button><button class="so" onclick="SS(this,'fisik','lambat')">Lambat tumbuh</button></div></div>
+      </div>
+      <div id="omega-detail-box" style="display:none;margin-top:12px">
+        <div style="font-size:10px;color:var(--gold);font-weight:600;margin-bottom:5px">🔬 OMEGA — Ceritakan detail kondisi hewan kamu</div>
+        <textarea class="inp" id="omega-detail" rows="3" placeholder="Contoh: Sapi jantan 3 tahun, sudah tidak mau makan 2 hari, terlihat lemas, perut sebelah kiri kembung, feses encer kehijauan, suhu tubuh terasa panas..." style="resize:none;line-height:1.6;font-size:12px"></textarea>
+      </div>
+      <button class="btn btn-g" style="margin-top:14px" onclick="AZ()">Analisa AI</button>
+      <div id="ares" class="ares">
+        <div style="font-family:var(--fd);font-size:15px;font-weight:900;margin-bottom:7px" id="alv"></div>
+        <div id="aadv" style="font-size:12px;line-height:1.65;color:var(--t2)"></div>
+        <div id="vsec" style="display:none;margin-top:11px">
+          <div style="font-size:10px;color:var(--t2);margin-bottom:6px">🏥 Dokter Terdekat</div>
+          <div class="vetc">
+            <div style="font-size:19px">👨‍⚕️</div>
+            <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t1)">drh. Budi Santoso</div><div style="font-size:10px;color:var(--gold)">📍 2.3 km · Klinik Hewan Mojosari</div></div>
+            <button class="bwa" onclick="window.open('https://wa.me/6281234567890','_blank')">WA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKET -->
+<div id="sc-mkt" class="scr">
+  <div class="pg">
+    <div class="eye">MARKET INTELLIGENCE</div>
+    <div class="h1" style="margin-bottom:14px">Global Trade Data</div>
+    <div class="phero">
+      <div style="font-size:10px;color:var(--t2);margin-bottom:3px">Indeks Harga Ternak Nasional</div>
+      <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--green)">Rp 45.280/kg</div>
+      <div style="font-size:10px;color:var(--green);margin-top:2px">↑ +2.4% dari kemarin</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:4px">Sumber: BPS · Kementan RI · FAO · World Bank</div>
+    </div>
+    <div class="p6">
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐄 Sapi</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 48.2rb</div><div style="font-size:9px;color:var(--green)">↑ +3.2%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐐 Kambing</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 38.5rb</div><div style="font-size:9px;color:var(--green)">↑ +1.8%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐑 Domba</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 35.8rb</div><div style="font-size:9px;color:var(--red)">↓ -0.3%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐔 Ayam</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 28rb</div><div style="font-size:9px;color:var(--red)">↓ -0.5%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🐟 Lele</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 18.5rb</div><div style="font-size:9px;color:var(--green)">↑ +0.8%</div></div>
+      <div class="pb"><div style="font-size:9px;color:var(--t2)">🌶 Cabai</div><div style="font-family:var(--fm);font-size:11px;font-weight:700;color:var(--t1);margin:3px 0">Rp 42rb</div><div style="font-size:9px;color:var(--green)">↑ +5.1%</div></div>
+    </div>
+    <div class="chbox">
+      <div style="font-size:11px;font-weight:600;color:var(--t1);margin-bottom:9px">Tren Harga Kambing — 7 Hari</div>
+      <div class="cbars" id="cbars"></div>
+      <div class="clbls" id="clbls"></div>
+      <div style="font-size:8px;color:var(--t3);margin-top:5px">Sumber: BPS, Kementan RI, FAO</div>
+    </div>
+    <div class="eye">CHAT KOMUNITAS 🌐</div>
+    <div class="commbox">
+      <div id="cmsgs">
+        <div class="cmsg"><div class="cav2">👨‍🌾</div><div class="cbbl"><div class="cu">H. Budi · Mojokerto</div><div class="clc">🇮🇩 · 2 mnt lalu</div><div class="ct">Harga kambing Mojosari hari ini Rp 38rb/kg. Naik dari kemarin.</div></div></div>
+        <div class="cmsg"><div class="cav2">👨‍🌾</div><div class="cbbl"><div class="cu">Ahmad · Lumajang</div><div class="clc">🇮🇩 · 15 mnt lalu</div><div class="ct">Di Lumajang juga naik. Stok menipis. Timing jual sekarang bagus.</div></div></div>
+        <div class="cmsg"><div class="cav2">🧑‍🌾</div><div class="cbbl"><div class="cu">Rahmat · Malaysia</div><div class="clc">🇲🇾 · 1 jam — 🌐 Auto-translated</div><div class="ct">Harga naik menjelang Aidiladha. Ada yang bisa supply ke Malaysia?</div></div></div>
+      </div>
+      <div class="cir">
+        <input class="ci" id="cinp" placeholder="Tulis pesan... 🌐 auto-translate" onkeydown="if(event.key==='Enter')doSendComm()">
+        <button class="csnd" onclick="doSendComm()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI CHAT -->
+<div id="sc-chat" class="scr">
+  <div style="padding-top:52px;display:flex;flex-direction:column;height:100vh">
+    <div class="chdr">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+        <div>
+          <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1)">OMEGA INTELLIGENCE</div>
+          <div style="font-size:9px;color:var(--gold);margin-top:1px">AI Konsultan Ekosistem Hayati · 24/7</div>
+        </div>
+        <div style="font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:bl 1.2s infinite"></span>ONLINE</div>
+      </div>
+      <div class="chips" id="tchips">
+        <button class="chip on" onclick="ST('Umum',this)">Umum</button>
+        <button class="chip" onclick="ST('Kesehatan',this)">🏥 Kesehatan</button>
+        <button class="chip" onclick="ST('Pakan',this)">🌿 Pakan</button>
+        <button class="chip" onclick="ST('Pasar',this)">📈 Pasar</button>
+        <button class="chip" onclick="ST('Tanaman',this)">🌾 Tanaman</button>
+        <button class="chip" onclick="ST('Breeding',this)">🧬 Breeding</button>
+      </div>
+    </div>
+    <div class="cmsgs" id="cmsgs2">
+      <div class="msys">
+        <div class="omav">Ω</div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.6">Selamat datang di <b>Omega Intelligence</b>! Saya AI konsultan ekosistem hayati TernakOS — ahli di ternak, unggas, aquaculture, pertanian, dan semua yang dibudidayakan manusia. 🐄🌾🐟</div>
+      </div>
+      <div id="sqchips" style="display:flex;flex-wrap:wrap;gap:5px">
+        <button onclick="SQ('Sapi saya tidak mau makan sejak siang, apa penyebabnya?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Sapi tidak mau makan</button>
+        <button onclick="SQ('Timing terbaik jual kambing menjelang idul adha?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Timing jual idul adha</button>
+        <button onclick="SQ('Cara mencegah PMK pada sapi?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Cegah PMK</button>
+        <button onclick="SQ('Waktu tanam cabai optimal di Jawa Timur?')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">Tanam cabai</button>
+      </div>
+    </div>
+    <div class="cbot">
+      <div class="crow">
+        <textarea class="cta" id="ctinp" placeholder="Tanya Omega AI..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();SM()}"></textarea>
+        <button class="csend" id="csend" onclick="SM()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUB: MARKETPLACE -->
+<div id="sub-mktpl" class="sub">
+  <div class="back" onclick="CS('sub-mktpl')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">MARKETPLACE</div>
+  <div class="h1" style="margin-bottom:3px">Jual Beli Ternak</div>
+  <div style="font-size:10px;color:var(--green);margin-bottom:13px">Escrow Protected · Verified</div>
+  <div class="chips" id="mktf" style="margin-bottom:13px">
+    <button class="chip on" onclick="FM('Semua',this)">Semua</button>
+    <button class="chip" onclick="FM('Sapi',this)">🐄 Sapi</button>
+    <button class="chip" onclick="FM('Kambing',this)">🐐 Kambing</button>
+    <button class="chip" onclick="FM('Tersedia',this)">✅ Tersedia</button>
+  </div>
+  <div id="lgrid"></div>
+  <div style="height:14px"></div>
+  <button class="btn btn-g" onclick="OM('m-sell')">+ Jual Hewan</button>
+</div>
+
+<!-- SUB: ANNUITY -->
+<div id="sub-ann" class="sub">
+  <div class="back" onclick="CS('sub-ann')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">SMART ANNUITY</div>
+  <div class="h1" style="margin-bottom:3px">Kalkulasi ROI</div>
+  <div style="font-size:10px;color:var(--pur);margin-bottom:16px">Khusus PRO · EXCLUSIVE · OMEGA</div>
+  <div style="margin-bottom:9px"><label class="lbl">Modal Beli (Rp) — Wajib</label><input class="inp" id="am" type="number" placeholder="25000000"></div>
+  <div style="margin-bottom:9px"><label class="lbl">Target Harga Jual (Rp) — Wajib</label><input class="inp" id="at" type="number" placeholder="35000000"></div>
+  <div style="margin-bottom:9px"><label class="lbl">Biaya Pakan/Bulan (Rp) — Opsional</label><input class="inp" id="ap" type="number" placeholder="1500000"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px">
+    <div><label class="lbl">Bulan ke Jual</label><input class="inp" id="ab" type="number" placeholder="Default: 6"></div>
+    <div><label class="lbl">Inflasi Pakan %</label><input class="inp" id="ai2" type="number" placeholder="Default: 5"></div>
+  </div>
+  <button class="btn btn-g" onclick="ROI()">Hitung ROI</button>
+  <div id="rres" style="display:none;margin-top:18px">
+    <div class="roinum" id="rpct"></div>
+    <div style="text-align:center;font-size:12px;margin-top:4px" id="rdesc"></div>
+    <div class="rg">
+      <div class="ri"><div style="font-size:9px;color:var(--t2)">Total Modal</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--red);margin-top:3px" id="rmod"></div></div>
+      <div class="ri"><div style="font-size:9px;color:var(--t2)">Profit Bersih</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--green);margin-top:3px" id="rprf"></div></div>
+      <div class="ri"><div style="font-size:9px;color:var(--t2)">Profit/Bulan</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--cyan);margin-top:3px" id="rmon"></div></div>
+      <div class="ri"><div style="font-size:9px;color:var(--t2)">Payback Period</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--pur);margin-top:3px" id="rpay"></div></div>
+    </div>
+    <div class="insight"><div style="font-size:9px;color:var(--gold);font-weight:600;margin-bottom:6px">★ Rekomendasi AI</div><div style="font-size:12px;color:var(--t2);line-height:1.65" id="rrec"></div></div>
+  </div>
+</div>
+
+<!-- SUB: WEATHER -->
+<div id="sub-wx" class="sub">
+  <div class="back" onclick="CS('sub-wx')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">WEATHER & GEO INTELLIGENCE</div>
+  <div class="wxbig" id="wx-main"><div style="font-family:var(--fd);font-size:52px;font-weight:900;color:var(--t1)" id="wx-temp">--°C</div><div style="font-size:12px;color:var(--t2);margin-top:3px" id="wx-desc">Memuat cuaca real...</div><div style="font-size:10px;color:var(--gold);margin-top:4px">📍 Mojosari, Mojokerto</div></div>
+  <div class="fcrow" id="wx-forecast">
+    <div class="fc"><div style="font-size:9px;color:var(--t2)">Memuat...</div><div style="font-size:19px;margin:4px 0">⛅</div><div style="font-size:11px;font-weight:600">--°C</div></div>
+  </div>
+  <div class="eye">GEO INTELLIGENCE</div>
+  <div class="geog">
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">🏔</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Topografi</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Dataran rendah · 25 mdpl</div></div>
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">💧</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Sumber Air</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Sungai Brantas 1.2 km</div></div>
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">⚠️</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Risiko Bencana</div><div style="font-size:10px;color:var(--green);margin-top:3px">Banjir: Rendah</div></div>
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">🦠</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Wabah Regional</div><div style="font-size:10px;color:var(--green);margin-top:3px">Tidak ada dalam 50km</div></div>
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">🌱</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Kesesuaian Lahan</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Optimal: kambing, sapi, padi</div></div>
+    <div class="gi"><div style="font-size:18px;margin-bottom:5px">💨</div><div style="font-size:11px;font-weight:600;color:var(--t1)">Kualitas Udara</div><div style="font-size:10px;color:var(--green);margin-top:3px">AQI 42 — Baik</div></div>
+  </div>
+</div>
+
+<!-- SUB: STORE -->
+<div id="sub-store" class="sub">
+  <div class="back" onclick="CS('sub-store')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">OFFICIAL STORE</div>
+  <div class="h1" style="margin-bottom:3px">Produk TernakOS</div>
+  <div style="font-size:10px;color:var(--gold);margin-bottom:13px">Hardware Resmi · Terintegrasi App</div>
+  <div class="stgrid">
+    <div class="sprod" onclick="T('QR-Omega Ear Tag — Rp 150.000/10 pcs')"><div class="spimg">🏷️</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">QR-Omega Ear Tag</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 150rb/10pcs</div><div style="font-size:9px;color:var(--t2)">Scan = profil instan</div></div></div>
+    <div class="sprod" onclick="T('Measure Tape — Rp 35.000')"><div class="spimg">📏</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Measure Tape</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 35rb</div><div style="font-size:9px;color:var(--t2)">Estimasi berat akurat</div></div></div>
+    <div class="sprod" onclick="T('Transit Tag — Rp 175.000/5 pcs')"><div class="spimg">🚚</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Transit Tag</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 175rb/5pcs</div><div style="font-size:9px;color:var(--t2)">Khusus hewan transit</div></div></div>
+    <div class="sprod" onclick="T('Nutrisi Block — Rp 45.000')"><div class="spimg">🧊</div><div style="padding:11px"><div style="font-size:11px;font-weight:600;color:var(--t1)">Nutrisi Block</div><div style="font-family:var(--fm);font-size:12px;color:var(--gold);margin:4px 0">Rp 45rb</div><div style="font-size:9px;color:var(--t2)">QR aktivasi jadwal nutrisi</div></div></div>
+    <div class="sprod sp2" onclick="T('Premium Kit — Rp 449.000')"><div style="display:flex;align-items:center;gap:12px;padding:13px"><div style="font-size:30px">🎁</div><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Premium Kit</div><div style="font-family:var(--fm);font-size:13px;color:var(--gold)">Rp 449rb</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Starter Kit + 5 block + 1 bln PRO gratis</div></div></div></div>
+  </div>
+</div>
+
+<!-- SUB: HAYATI -->
+<div id="sub-hay" class="sub">
+  <div class="back" onclick="CS('sub-hay')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">EKOSISTEM HAYATI</div>
+  <div class="h1" style="margin-bottom:3px">Semua Yang Dibudidayakan</div>
+  <div style="font-size:10px;color:var(--cyan);margin-bottom:13px">From Farm to the World</div>
+  <div class="hayg">
+    <div class="hay" onclick="T('Modul Tanaman Pangan')"><div style="font-size:24px;margin-bottom:6px">🌾</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Tanaman Pangan</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Padi, Jagung, Kedelai</div></div>
+    <div class="hay" onclick="T('Modul Hortikultura')"><div style="font-size:24px;margin-bottom:6px">🌶</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Hortikultura</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Cabai, Tomat, Bawang</div></div>
+    <div class="hay" onclick="T('Modul Perkebunan')"><div style="font-size:24px;margin-bottom:6px">🌴</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Perkebunan</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Kopi, Kakao, Sawit</div></div>
+    <div class="hay" onclick="T('Modul Aquaculture')"><div style="font-size:24px;margin-bottom:6px">🐟</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Aquaculture</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Lele, Nila, Udang</div></div>
+    <div class="hay" onclick="T('Modul Insekta')"><div style="font-size:24px;margin-bottom:6px">🐝</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Insekta & Koloni</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Lebah, Ulat, Maggot</div></div>
+    <div class="hay" onclick="T('Modul Tanaman Obat')"><div style="font-size:24px;margin-bottom:6px">🌿</div><div style="font-size:12px;font-weight:600;color:var(--t1)">Tanaman Obat</div><div style="font-size:9px;color:var(--cyan);margin-top:2px">Jahe, Kunyit, Temulawak</div></div>
+  </div>
+  <div class="eye" style="color:var(--pur)">COMING SOON</div>
+  <div class="csrow"><span style="font-size:16px">🛰</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Satellite Weather Intelligence</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Prediksi cuaca hyperlokal per desa</div></div><span class="soon">Q3 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">🧬</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">AI Genetic Mapping</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Analisis silsilah breeding optimal</div></div><span class="soon">Q4 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">⛓</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Blockchain Certificate</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Sertifikat kepemilikan global</div></div><span class="soon">Q4 2026</span></div>
+  <div class="csrow"><span style="font-size:16px">🌍</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Global Food Trade Facilitator</div><div style="font-size:9px;color:var(--t2);margin-top:2px">Fasilitasi ekspor-impor global</div></div><span class="soon">2027</span></div>
+</div>
+
+<!-- SUB: FINANCIAL -->
+<div id="sub-fin" class="sub">
+  <div class="back" onclick="CS('sub-fin')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">FINANCIAL HUB</div>
+  <div class="h1" style="margin-bottom:13px">Asuransi & Modal</div>
+  <div class="fincard"><div style="font-size:20px;margin-bottom:7px">🛡️</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Asuransi Ternak</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">Klaim via foto langsung dari app. Partner: Jasindo Agri, Askrindo.</div><button class="btn btn-o" style="margin-top:11px" onclick="T('Aktif setelah verifikasi KTP')">Daftar Asuransi</button></div>
+  <div class="fincard"><div style="font-size:20px;margin-bottom:7px">💳</div><div style="font-size:13px;font-weight:600;color:var(--t1)">KUR & Pinjaman Modal</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">Data riwayat ternak TernakOS jadi lampiran pengajuan KUR BRI, BNI, Mandiri.</div><button class="btn btn-o" style="margin-top:11px" onclick="T('Aktif setelah verifikasi KTP')">Ajukan KUR</button></div>
+  <div class="fincard" style="border:1px dashed var(--b2)"><div style="font-size:20px;margin-bottom:7px">🌍</div><div style="font-size:13px;font-weight:600;color:var(--t1)">Global Finance</div><div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5">ADB, IFC World Bank, IFAD — akses modal internasional peternak ASEAN.</div><div class="soon" style="margin-top:8px;display:inline-block">COMING 2027</div></div>
+</div>
+
+<!-- SUB: PROFILE -->
+<div id="sub-prf" class="sub">
+  <div class="back" onclick="CS('sub-prf')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="phero2">
+    <div class="pav">Ω</div>
+    <div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--t1)" id="prf-name">RISS PETERNAK</div>
+    <div style="font-size:10px;color:var(--t2);margin-top:2px" id="prf-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bfcdd6ccccffcbdacdd1ded4d0cc91d6db">[email&#160;protected]</a></div>
+    <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 13px;border-radius:18px;margin-top:9px;background:var(--gd);border:1px solid var(--bdr);font-family:var(--fd);font-size:9px;font-weight:700;color:var(--gold);letter-spacing:1.5px">★ OMEGA · Rp 499.000/bln</div>
+  </div>
+  <div class="pstats">
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--cyan)" id="prf-hewan">6</div><div style="font-size:8px;color:var(--t2);margin-top:2px">Hewan</div></div>
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--green)">3</div><div style="font-size:8px;color:var(--t2);margin-top:2px">Listing</div></div>
+    <div class="ps"><div style="font-family:var(--fd);font-size:21px;font-weight:900;color:var(--pur)">8</div><div style="font-size:8px;color:var(--t2);margin-top:2px">ROI Calc</div></div>
+  </div>
+  <div style="margin-bottom:14px">
+    <div class="irow"><span style="font-size:13px">📍</span><span style="font-size:11px;color:var(--t2);flex:1">Lokasi</span><span style="font-size:11px;color:var(--t1);font-weight:500">Mojosari, Mojokerto</span></div>
+    <div class="irow"><span style="font-size:13px">📅</span><span style="font-size:11px;color:var(--t2);flex:1">Bergabung</span><span style="font-size:11px;color:var(--t1);font-weight:500">Maret 2026</span></div>
+    <div class="irow"><span style="font-size:13px">✅</span><span style="font-size:11px;color:var(--t2);flex:1">Status</span><span style="font-size:11px;color:var(--green);font-weight:500">Aktif & Terverifikasi</span></div>
+  </div>
+  <div class="eye">FITUR OMEGA</div>
+  <div style="margin-bottom:13px">
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Asset tracking unlimited + QR Tag wajib backup</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">AI Chat unlimited + dokter hewan 24/7</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Health Screening unlimited + GPS dokter terdekat</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Genetic Legacy Score + Life Intelligence Report</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Weather & Geo 14 hari + satellite data</span></div>
+    <div class="frow"><span style="color:var(--gold);font-size:10px">★</span><span style="font-size:10px;color:var(--t1)">Diskon hardware 50% + 5 QR Tag gratis/bulan</span></div>
+  </div>
+  <div class="eye" style="color:var(--pur)">COMING SOON</div>
+  <div style="margin-bottom:14px">
+    <div class="crow2"><span style="font-size:15px">🔬</span><span style="font-size:10px;color:var(--t1);flex:1">AI Biometric Scanner</span><span class="soon">Q4 2026</span></div>
+    <div class="crow2"><span style="font-size:15px">⛓</span><span style="font-size:10px;color:var(--t1);flex:1">Blockchain Certificate</span><span class="soon">Q4 2026</span></div>
+    <div class="crow2"><span style="font-size:15px">🤖</span><span style="font-size:10px;color:var(--t1);flex:1">Autonomous Market Agent</span><span class="soon">2027</span></div>
+  </div>
+  <button class="bout" onclick="doLogout()">Keluar dari Akun</button>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="m-animal" onclick="if(event.target.id==='m-animal')CM('m-animal')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);margin-bottom:14px">Daftarkan Hewan / Tanaman</div>
+    <div style="margin-bottom:8px"><label class="lbl">Nama / Kode</label><input class="inp" id="nn" placeholder="cth: Sultan / KMB-001"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+      <div><label class="lbl">Spesies</label><select class="inp" id="ns"><option>Sapi Limosin</option><option>Sapi Brahman</option><option>Kambing Etawa</option><option>Kambing Boer</option><option>Domba Merino</option><option>Ayam Broiler</option><option>Bebek</option><option>Ikan Lele</option><option>Udang</option><option>Padi</option><option>Jagung</option><option>Cabai</option></select></div>
+      <div><label class="lbl">Kelamin</label><select class="inp" id="ng"><option>Jantan</option><option>Betina</option><option>Tidak diketahui</option></select></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Fase Hidup</label>
+      <select class="inp" id="nf">
+        <option>🥚 Embrio/Telur</option><option>🐣 Neonatal — Baru lahir</option><option>🐥 Anakan — Sudah lepas induk</option><option>🐄 Remaja — Belum kawin</option><option>⭐ Dewasa Produktif</option><option>🤰 Sedang Bunting</option><option>📉 Produktivitas Menurun</option><option>🏁 Siap Afkir</option>
+      </select>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Lokasi</label><input class="inp" id="nl" placeholder="Desa/Kecamatan/Kota"></div>
+    <div style="margin-bottom:14px"><label class="lbl">Status Kesehatan</label><select class="inp" id="nst"><option>Sehat</option><option>Perlu Perhatian</option><option>Darurat</option></select></div>
+    <button class="btn btn-g" onclick="AddA()">Simpan & Generate QR Tag</button>
+    <button class="btn btn-o" style="margin-top:7px" onclick="CM('m-animal')">Batal</button>
+  </div>
+</div>
+
+<div class="modal" id="m-sell" onclick="if(event.target.id==='m-sell')CM('m-sell')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--t1);margin-bottom:14px">Jual Hewan / Hasil Tani</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:8px">
+      <div><label class="lbl">Kategori</label><select class="inp" id="sk"><option>Ternak</option><option>Unggas</option><option>Aquaculture</option><option>Hasil Tani</option></select></div>
+      <div><label class="lbl">Spesies</label><input class="inp" id="ss2" placeholder="Kambing Etawa"></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="lbl">Harga (Rp)</label><input class="inp" id="sh" type="number" placeholder="3500000"></div>
+    <div style="margin-bottom:8px"><label class="lbl">Lokasi</label><input class="inp" id="sl" placeholder="Mojosari, Mojokerto"></div>
+    <div style="margin-bottom:8px"><label class="lbl">WhatsApp</label><input class="inp" id="sw" type="number" placeholder="628xxx"></div>
+    <div style="margin-bottom:14px"><label class="lbl">Deskripsi</label><input class="inp" id="sd" placeholder="Kondisi, keunggulan..."></div>
+    <button class="btn btn-g" style="background:linear-gradient(135deg,var(--green),#00E090);color:var(--bg)" onclick="AddL()">Posting Sekarang</button>
+    <button class="btn btn-o" style="margin-top:7px" onclick="CM('m-sell')">Batal</button>
+  </div>
+</div>
+
+<div class="toast" id="toastel"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── OPENAI KEY ──
+// AI uses /api/chat - no key needed here
+
+// ── FIREBASE INIT ──
+firebase.initializeApp({
+  apiKey: "AIzaSyB6x0IRo2WME4_FjqGI2z93SH4us9JXaD0",
+  authDomain: "ternakos.firebaseapp.com",
+  projectId: "ternakos",
+  storageBucket: "ternakos.firebasestorage.app",
+  messagingSenderId: "1071749535862",
+  appId: "1:1071749535862:web:2c48b8106d177281c2e757"
+});
+var auth = firebase.auth();
+var db = firebase.firestore();
+
+// ── AUTH STATE ──
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    window.currentUser = user;
+    document.getElementById('nav').style.display = 'flex';
+    document.getElementById('bnav').style.display = 'flex';
+    var name = user.displayName ? user.displayName.split(' ')[0].toUpperCase() : user.email.split('@')[0].toUpperCase();
+    document.getElementById('dash-greeting').textContent = 'SELAMAT DATANG, ' + name;
+    document.getElementById('prf-name').textContent = user.displayName || name;
+    updateSettingsDisplay(user);
+    document.getElementById('prf-email').textContent = user.email;
+    loadAnimals(user.uid);
+    if (document.getElementById('sc-login').classList.contains('on')) {
+      document.getElementById('sc-login').classList.remove('on');
+      G('dash');
+    }
+  } else {
+    window.currentUser = null;
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('bnav').style.display = 'none';
+  }
+});
+
+// ── AUTH FUNCTIONS ──
+function doLogin() {
+  var email = document.getElementById('le').value;
+  var pass = document.getElementById('lp').value;
+  if (!email || !pass) { T('Isi email dan password dulu!'); return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(function(e) {
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') T('Email atau password salah');
+      else if (e.code === 'auth/invalid-email') T('Format email tidak valid');
+      else T('Login gagal: ' + e.message);
+    });
+}
+
+function doGoogle() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .catch(function() { T('Login Google gagal. Coba lagi.'); });
+}
+
+function doForgot() {
+  var email = document.getElementById('le').value;
+  if (!email) { T('Isi email dulu!'); return; }
+  auth.sendPasswordResetEmail(email)
+    .then(function() { T('Link reset dikirim ke email!'); })
+    .catch(function() { T('Email tidak ditemukan'); });
+}
+
+function doLogout() {
+  auth.signOut().then(function() {
+    document.querySelectorAll('.sub').forEach(function(s) { s.classList.remove('on'); });
+    document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
+    document.getElementById('sc-login').classList.add('on');
+    T('Sampai jumpa!');
+  });
+}
+
+function showReg() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('reg-form').style.display = 'block';
+}
+
+function hideReg() {
+  document.getElementById('reg-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+}
+
+function doReg() {
+  var name = document.getElementById('rn').value.trim();
+  var email = document.getElementById('re').value.trim();
+  var pass = document.getElementById('rp').value;
+  if (!name) { T('Isi nama dulu!'); return; }
+  if (!email) { T('Isi email dulu!'); return; }
+  if (pass.length < 6) { T('Password minimal 6 karakter!'); return; }
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) { return cred.user.updateProfile({ displayName: name }); })
+    .then(function() { T('Akun berhasil dibuat! Selamat datang, ' + name + '!'); })
+    .catch(function(e) {
+      if (e.code === 'auth/email-already-in-use') T('Email sudah terdaftar');
+      else if (e.code === 'auth/weak-password') T('Password terlalu lemah');
+      else T('Gagal daftar: ' + e.message);
+    });
+}
+
+// ── DATA ──
+var AN = [
+  {id:'TOS-SAP-001',n:'Sultan',sp:'Sapi Limosin',g:'Jantan',f:'Dewasa Produktif',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-KMB-001',n:'Ratu',sp:'Kambing Etawa',g:'Betina',f:'Sedang Bunting',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-SAP-002',n:'Garuda',sp:'Sapi Brahman',g:'Jantan',f:'Dewasa Produktif',st:'Perlu Perhatian',l:'Mojosari',c:'#D4960A'},
+  {id:'TOS-DMB-001',n:'Mawar',sp:'Domba Merino',g:'Betina',f:'Remaja',st:'Sehat',l:'Mojosari',c:'#00B86B'},
+  {id:'TOS-SAP-003',n:'Titan',sp:'Sapi Simmental',g:'Jantan',f:'Dewasa Produktif',st:'Darurat',l:'Mojosari',c:'#E03A52'},
+  {id:'TOS-KMB-002',n:'Putri',sp:'Kambing Boer',g:'Betina',f:'Produktivitas Menurun',st:'Sehat',l:'Mojosari',c:'#00B86B'}
+];
+
+var LS = [
+  {id:'M001',s:'H. Budi Santoso',sp:'Sapi Limosin',h:28500000,l:'Mojokerto',st:'Tersedia',wa:'6281234567890',d:'Sapi Limosin jantan 3 tahun, vaksin lengkap.',em:'🐄'},
+  {id:'M002',s:'Pak Rahmat',sp:'Kambing Etawa',h:4200000,l:'Lumajang',st:'Tersedia',wa:'6289876543210',d:'Kambing Etawa betina produktif.',em:'🐐'},
+  {id:'M003',s:'CV. Omega Farm',sp:'Sapi Brahman',h:45000000,l:'Probolinggo',st:'Diproses',wa:'6285555444333',d:'Sapi Brahman 520kg.',em:'🐄'},
+  {id:'M004',s:'Ibu Sari',sp:'Domba Merino',h:3800000,l:'Jember',st:'Tersedia',wa:'6281111222333',d:'Domba Merino wol premium.',em:'🐑'}
+];
+
+var SC = {Sehat:'#00B86B','Perlu Perhatian':'#D4960A',Darurat:'#E03A52'};
+var SB = {Sehat:'rgba(0,184,107,.1)','Perlu Perhatian':'rgba(212,150,10,.1)',Darurat:'rgba(224,58,82,.1)'};
+var SL = {Tersedia:'#00B86B',Diproses:'#D4960A',Terjual:'#E03A52'};
+
+// ── FIRESTORE ──
+function loadAnimals(uid) {
+  db.collection('animals').where('owner', '==', uid)
+    .onSnapshot(function(snap) {
+      if (!snap.empty) {
+        AN = snap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+        document.getElementById('prf-hewan').textContent = AN.length;
+      }
+      RA();
+    }, function() { RA(); });
+}
+
+db.collection('listings').orderBy('createdAt', 'desc')
+  .onSnapshot(function(snap) {
+    if (!snap.empty) {
+      LS = snap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+      RL();
+    }
+  }, function() {});
+
+db.collection('community_chat').orderBy('createdAt', 'asc')
+  .onSnapshot(function(snap) {
+    snap.docChanges().forEach(function(change) {
+      if (change.type === 'added') {
+        var d = change.doc.data();
+        var msgs = document.getElementById('cmsgs');
+        if (!msgs) return;
+        var isMe = window.currentUser && d.uid === window.currentUser.uid;
+        if (!isMe) {
+          msgs.innerHTML += '<div class="cmsg"><div class="cav2">' + (d.flag || '👨‍🌾') + '</div><div class="cbbl"><div class="cu">' + d.name + ' · ' + d.loc + '</div><div class="clc">' + d.country + ' · baru saja</div><div class="ct">' + d.text + '</div></div></div>';
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      }
+    });
+  }, function() {});
+
+// ── NAVIGATION ──
+function G(n) {
+  document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
+  document.getElementById('sc-' + n).classList.add('on');
+  document.querySelectorAll('.bn').forEach(function(b) { b.classList.remove('on'); b.querySelector('.bn-lb').style.color = 'var(--t3)'; });
+  var b = document.getElementById('bn-' + n);
+  if (b) { b.classList.add('on'); b.querySelector('.bn-lb').style.color = 'var(--gold)'; }
+  window.scrollTo(0, 0);
+}
+
+function OS(id) { document.getElementById(id).classList.add('on'); window.scrollTo(0, 0); }
+function CS(id) { document.getElementById(id).classList.remove('on'); }
+function OM(id) { document.getElementById(id).classList.add('on'); }
+function CM(id) { document.getElementById(id).classList.remove('on'); }
+
+// ── ANIMALS ──
+function RA(f) {
+  f = f || 'Semua';
+  var list = document.getElementById('alist');
+  var data = f === 'Semua' ? AN : AN.filter(function(a) { return a.st === f; });
+  list.innerHTML = data.map(function(a) {
+    return '<div class="acard" style="--sc:' + (a.c || '#00B86B') + '" onclick="T(\'' + a.n + ' — ' + a.id + '\')">' +
+      '<div class="aav">' + a.n[0] + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px">' + a.n +
+          '<span style="background:' + (SB[a.st] || SB.Sehat) + ';color:' + (SC[a.st] || SC.Sehat) + ';padding:2px 6px;border-radius:6px;font-size:8px;font-weight:600">' + a.st + '</span></div>' +
+        '<div style="font-size:10px;color:var(--gold);margin:2px 0">' + a.sp + ' · ' + a.f + '</div>' +
+        '<div style="display:flex;gap:8px"><span style="font-size:9px;color:var(--t2)">📍 ' + a.l + '</span><span style="font-size:9px;color:var(--t2)">' + a.g + '</span></div>' +
+        '<div style="font-family:var(--fm);font-size:8px;color:var(--t3);margin-top:2px">' + a.id + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function FA(f, b) {
+  document.querySelectorAll('#mf .chip').forEach(function(c) { c.classList.remove('on'); });
+  b.classList.add('on');
+  RA(f);
+}
+
+function AddA() {
+  var n = document.getElementById('nn').value.trim();
+  if (!n) { T('Isi nama dulu!'); return; }
+  var s = document.getElementById('nst').value;
+  var animal = {id: 'TOS-NEW-' + Date.now(), n: n, sp: document.getElementById('ns').value, g: document.getElementById('ng').value, f: document.getElementById('nf').value, st: s, l: document.getElementById('nl').value || 'Mojosari', c: SC[s] || '#00B86B'};
+  AN.push(animal);
+  CM('m-animal');
+  RA();
+  if (window.currentUser) {
+    db.collection('animals').add(Object.assign({}, animal, {owner: window.currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()}))
+      .then(function() { T('✅ ' + n + ' tersimpan di cloud!'); });
+  } else {
+    T('✅ ' + n + ' didaftarkan!');
+  }
+}
+
+// ── MARKETPLACE ──
+function FR(v) {
+  if (v >= 1e9) return 'Rp ' + (v/1e9).toFixed(1) + 'M';
+  if (v >= 1e6) return 'Rp ' + (v/1e6).toFixed(1) + 'jt';
+  return 'Rp ' + (v/1e3).toFixed(0) + 'rb';
+}
+
+function RL(f) {
+  f = f || 'Semua';
+  var g = document.getElementById('lgrid');
+  if (!g) return;
+  var data = f === 'Semua' ? LS : LS.filter(function(l) { return l.sp.includes(f) || l.st === f; });
+  g.innerHTML = data.map(function(l) {
+    return '<div class="lst">' +
+      '<div class="limg">' + l.em + '<span class="lprice">' + FR(l.h) + '</span>' +
+        '<span style="position:absolute;top:7px;left:9px;padding:2px 7px;border-radius:6px;background:' + (SL[l.st] || SL.Tersedia) + '1A;color:' + (SL[l.st] || SL.Tersedia) + ';font-size:8px;font-weight:600">' + l.st + '</span></div>' +
+      '<div class="lbody">' +
+        '<div style="font-size:12px;font-weight:600;color:var(--t1)">' + l.s + '</div>' +
+        '<div style="display:flex;gap:9px;margin-top:4px"><span style="font-size:9px;color:var(--t2)">🏷 ' + l.sp + '</span><span style="font-size:9px;color:var(--t2)">📍 ' + l.l + '</span></div>' +
+        '<div style="font-size:10px;color:var(--t2);margin-top:5px;line-height:1.5">' + l.d + '</div>' +
+        (l.st === 'Tersedia' ? '<button style="width:100%;margin-top:9px;padding:8px;border-radius:9px;background:rgba(0,184,107,.1);color:var(--green);border:1px solid rgba(0,184,107,.2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--fb)" onclick="window.open(\'https://wa.me/' + l.wa + '?text=Halo, tertarik ' + l.sp + ' (' + l.id + ') ' + FR(l.h) + ' di TernakOS\',\'_blank\')">💬 Hubungi via WhatsApp</button>' : '<div style="text-align:center;font-size:10px;color:var(--t3);padding:7px">' + l.st + '</div>') +
+      '</div></div>';
+  }).join('');
+}
+
+function FM(f, b) {
+  document.querySelectorAll('#mktf .chip').forEach(function(c) { c.classList.remove('on'); });
+  b.classList.add('on');
+  RL(f);
+}
+
+function AddL() {
+  var h = parseInt(document.getElementById('sh').value) || 0;
+  if (!h) { T('Isi harga dulu!'); return; }
+  var user = window.currentUser;
+  var name = user ? (user.displayName || user.email.split('@')[0]) : 'Akun Saya';
+  var listing = {id: 'NEW-' + Date.now(), s: name, sp: document.getElementById('ss2').value, h: h, l: document.getElementById('sl').value || '-', st: 'Tersedia', wa: document.getElementById('sw').value || '', d: document.getElementById('sd').value || '', em: '🐄'};
+  LS.unshift(listing);
+  CM('m-sell');
+  RL();
+  if (user) {
+    db.collection('listings').add(Object.assign({}, listing, {sellerUid: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()}))
+      .then(function() { T('✅ Listing berhasil diposting!'); });
+  } else {
+    T('✅ Listing berhasil diposting!');
+  }
+}
+
+// ── HEALTH ──
+var selC = '', sym = {};
+var CL = {dalam:'🔴 Penyakit Dalam', luar:'🟡 Penyakit Luar', cerna:'🟠 Pencernaan', repro:'🔵 Reproduksi', nafas:'🟣 Pernafasan', nutrisi:'⚪ Nutrisi'};
+
+function PC(c) {
+  selC = c; sym = {};
+  document.getElementById('hs1').style.display = 'none';
+  document.getElementById('hs2').style.display = 'block';
+  document.getElementById('cbadge').textContent = CL[c];
+  document.querySelectorAll('.ssec').forEach(function(s) { s.classList.remove('on'); });
+  var el = document.getElementById('ss-' + c);
+  if (el) el.classList.add('on');
+  document.getElementById('ares').classList.remove('on');
+  document.querySelectorAll('.so').forEach(function(b) { b.classList.remove('on'); });
+  // Show OMEGA detail box based on tier
+  var tier = (document.querySelector('.ntier') || {}).textContent || 'BASIC';
+  var ob = document.getElementById('omega-detail-box');
+  if (ob) ob.style.display = tier === 'OMEGA' ? 'block' : 'none';
+}
+
+function BC() {
+  document.getElementById('hs1').style.display = 'block';
+  document.getElementById('hs2').style.display = 'none';
+}
+
+function SS(b, k, v) {
+  document.querySelectorAll('.so').forEach(function(x) {
+    if (x.getAttribute('onclick') && x.getAttribute('onclick').indexOf("'" + k + "'") !== -1) {
+      x.classList.remove('on');
+    }
+  });
+  b.classList.add('on');
+  sym[k] = v;
+}
+
+function AZ() {
+  var tierEl = document.querySelector('.ntier');
+  var tier = tierEl ? tierEl.textContent.trim() : 'BASIC';
+  var tierTokens = {BASIC: 300, PRO: 600, EXCLUSIVE: 1000, OMEGA: 2000};
+  var maxTok = tierTokens[tier] || 300;
+
+  // Build symptom summary
+  var symDesc = Object.entries(sym).map(function(e) { return e[0] + ': ' + e[1]; }).join(', ');
+  var category = CL[selC] || selC;
+  var omegaDetail = '';
+  if (tier === 'OMEGA') {
+    var detailEl = document.getElementById('omega-detail');
+    omegaDetail = detailEl && detailEl.value.trim() ? '\n\nCerita detail dari pemilik: ' + detailEl.value.trim() : '';
+  }
+
+  var prompt = 'Kamu adalah Omega Intelligence, AI dokter hewan TernakOS. Seorang peternak melaporkan kondisi hewannya.\n\nKategori keluhan: ' + category + '\nGejala terdeteksi: ' + (symDesc || 'belum spesifik') + omegaDetail + '\n\nBerikan:\n1. Tingkat keparahan (WASPADA/SIAGA/DARURAT/KRITIS)\n2. Kemungkinan diagnosis\n3. Tindakan segera yang harus dilakukan\n4. Perlu dokter hewan atau tidak\n\nJawab dalam Bahasa Indonesia, terstruktur dan jelas.';
+
+  // Show loading state
+  var r = document.getElementById('ares');
+  var lv = document.getElementById('alv');
+  var adv = document.getElementById('aadv');
+  var vet = document.getElementById('vsec');
+  r.style.cssText = 'background:var(--s2);border:1px solid var(--b2);border-radius:12px;padding:15px;';
+  lv.style.color = 'var(--gold)';
+  lv.textContent = '⏳ Menganalisa...';
+  adv.innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+  vet.style.display = 'none';
+  r.classList.add('on');
+  r.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      messages: [{role: 'user', content: prompt}],
+      max_tokens: maxTok
+    })
+  }).then(function(res) { return res.json(); })
+    .then(function(d) {
+      var ai = (d.choices && d.choices[0] && d.choices[0].message) ? d.choices[0].message.content : 'Tidak dapat menganalisa. Coba lagi.';
+      var rendered = (typeof marked !== 'undefined') ? marked.parse(ai) : ai.replace(/\n/g, '<br>');
+
+      // Detect severity from AI response for color
+      var aiLower = ai.toLowerCase();
+      if (aiLower.includes('kritis')) {
+        r.style.cssText = 'background:rgba(224,58,82,.07);border:1px solid rgba(224,58,82,.25);border-radius:12px;padding:15px;';
+        lv.style.color = '#E03A52'; lv.textContent = '⚫ KRITIS';
+        vet.style.display = 'block';
+      } else if (aiLower.includes('darurat')) {
+        r.style.cssText = 'background:rgba(224,58,82,.05);border:1px solid rgba(224,58,82,.2);border-radius:12px;padding:15px;';
+        lv.style.color = '#E03A52'; lv.textContent = '🔴 DARURAT';
+        vet.style.display = 'block';
+      } else if (aiLower.includes('siaga')) {
+        r.style.cssText = 'background:rgba(212,150,10,.05);border:1px solid rgba(212,150,10,.2);border-radius:12px;padding:15px;';
+        lv.style.color = '#D4960A'; lv.textContent = '🟠 SIAGA';
+        vet.style.display = 'none';
+      } else if (aiLower.includes('waspada')) {
+        r.style.cssText = 'background:rgba(200,152,26,.05);border:1px solid rgba(200,152,26,.18);border-radius:12px;padding:15px;';
+        lv.style.color = 'var(--gold)'; lv.textContent = '🟡 WASPADA';
+        vet.style.display = 'none';
+      } else {
+        r.style.cssText = 'background:rgba(0,184,107,.05);border:1px solid rgba(0,184,107,.18);border-radius:12px;padding:15px;';
+        lv.style.color = 'var(--green)'; lv.textContent = '✦ Analisa Selesai';
+        vet.style.display = 'none';
+      }
+      adv.innerHTML = rendered;
+    }).catch(function() {
+      lv.textContent = '⚠ Koneksi gagal';
+      adv.textContent = 'Tidak dapat terhubung ke AI. Periksa koneksi internet dan coba lagi.';
+    });
+}
+
+// ── AI CHAT ──
+var curT = 'Umum', cload = false;
+
+var SUGGESTIONS = {
+  'Umum': ['Sapi tidak mau makan', 'Timing jual idul adha', 'Cegah PMK', 'Tanam cabai'],
+  'Kesehatan': ['Sapi kembung mendadak', 'Kambing batuk terus-menerus', 'Ayam mencret darah', 'Cara vaksin PMK mandiri'],
+  'Pakan': ['Formulasi pakan sapi penggemukan', 'Pakan hemat untuk kambing', 'FCR ayam broiler ideal', 'Nutrisi lele per hari'],
+  'Pasar': ['Harga kambing Idul Adha 2025', 'Kapan waktu jual sapi terbaik', 'Prediksi harga cabai bulan ini', 'Cara kulak kambing yang untung'],
+  'Tanaman': ['Waktu tanam cabai Jawa Timur', 'Cara atasi penyakit padi blast', 'Pupuk organik vs kimia', 'Jadwal tanam bawang merah'],
+  'Breeding': ['Indukan kambing Boer terbaik', 'Cara atur birahi sapi', 'Jarak ideal antar kelahiran', 'Seleksi pejantan unggul']
+};
+
+var QUERIES = {
+  'Umum': ['Sapi saya tidak mau makan sejak siang, apa penyebabnya?', 'Timing terbaik jual kambing menjelang idul adha?', 'Cara mencegah PMK pada sapi?', 'Waktu tanam cabai optimal di Jawa Timur?'],
+  'Kesehatan': ['Sapi tiba-tiba kembung dan tidak bisa berdiri, apa yang harus dilakukan?', 'Kambing batuk terus-menerus sudah 3 hari, apa diagnosisnya?', 'Ayam mencret warna darah, penyakit apa dan cara atasi?', 'Cara melakukan vaksinasi PMK secara mandiri yang benar?'],
+  'Pakan': ['Formulasi pakan penggemukan sapi yang efisien dan murah?', 'Pakan alternatif hemat untuk kambing tanpa mengurangi bobot?', 'Berapa FCR ideal ayam broiler dan cara mencapainya?', 'Kebutuhan nutrisi ikan lele per hari agar tumbuh optimal?'],
+  'Pasar': ['Prediksi harga kambing menjelang Idul Adha 2025 dan kapan waktu jual terbaik?', 'Kapan waktu terbaik jual sapi untuk dapat harga tertinggi?', 'Prediksi harga cabai bulan depan berdasarkan tren saat ini?', 'Strategi kulak kambing yang menguntungkan di pasar Mojosari?'],
+  'Tanaman': ['Kapan waktu tanam cabai paling optimal di Jawa Timur?', 'Cara mengatasi penyakit blast pada padi secara organik?', 'Perbandingan efektivitas pupuk organik vs kimia untuk cabai?', 'Jadwal tanam bawang merah agar panen saat harga tinggi?'],
+  'Breeding': ['Kriteria indukan kambing Boer terbaik untuk produktivitas maksimal?', 'Cara mengatur siklus birahi sapi untuk hasil breeding optimal?', 'Jarak antar kelahiran ideal kambing agar indukan tetap produktif?', 'Cara seleksi pejantan unggul untuk meningkatkan kualitas keturunan?']
+};
+
+function ST(t, b) {
+  curT = t;
+  document.querySelectorAll('#tchips .chip').forEach(function(c) { c.classList.remove('on'); });
+  b.classList.add('on');
+  // Update suggestion chips
+  var suggs = SUGGESTIONS[t] || SUGGESTIONS['Umum'];
+  var queries = QUERIES[t] || QUERIES['Umum'];
+  var el = document.getElementById('sqchips');
+  if (el) {
+    el.innerHTML = suggs.map(function(s, i) {
+      return '<button onclick="SQ(\'' + queries[i].replace(/'/g, "\\'") + '\')" style="padding:5px 9px;border-radius:9px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;cursor:pointer;font-family:var(--fb)">' + s + '</button>';
+    }).join('');
+  }
+}
+
+function SQ(q) { document.getElementById('ctinp').value = q; SM(); }
+
+function SM() {
+  var inp = document.getElementById('ctinp');
+  var txt = inp.value.trim();
+  if (!txt || cload) return;
+  inp.value = '';
+  cload = true;
+  document.getElementById('csend').disabled = true;
+  var msgs = document.getElementById('cmsgs2');
+  msgs.innerHTML += '<div class="mu">' + txt + '</div>';
+  var lid = 'l' + Date.now();
+  msgs.innerHTML += '<div class="marow" id="' + lid + '"><div class="omav">Ω</div><div class="ma"><div class="dots"><span></span><span></span><span></span></div></div></div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  var tierEl = document.querySelector('.ntier');
+  var tier = tierEl ? tierEl.textContent.trim() : 'BASIC';
+  var tierTokens = {BASIC:500, PRO:1500, EXCLUSIVE:3000, OMEGA:4000};
+  var maxTok = tierTokens[tier] || 500;
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      messages: [{role:'user', content:'[Topik: ' + curT + '] ' + txt}],
+      max_tokens: maxTok
+    })
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      var ai = (d.choices && d.choices[0] && d.choices[0].message) ? d.choices[0].message.content : 'Maaf, tidak dapat merespons.';
+      var rendered = (typeof marked !== 'undefined') ? marked.parse(ai) : ai.replace(/\n/g,'<br>');
+      document.getElementById(lid).outerHTML = '<div class="marow"><div class="omav">Ω</div><div class="ma">' + rendered + '<div style="margin-top:6px"><span class="mtag">' + curT + '</span></div></div></div>';
+      msgs.scrollTop = msgs.scrollHeight;
+      cload = false;
+      document.getElementById('csend').disabled = false;
+    }).catch(function() {
+      document.getElementById(lid).outerHTML = '<div class="marow"><div class="omav">Ω</div><div class="ma">Koneksi gagal. Periksa koneksi internet.<div><span class="mtag">' + curT + '</span></div></div></div>';
+      msgs.scrollTop = msgs.scrollHeight;
+      cload = false;
+      document.getElementById('csend').disabled = false;
+    });
+}
+
+// ── ANNUITY ──
+function ROI() {
+  var m = parseFloat(document.getElementById('am').value) || 0;
+  var tg = parseFloat(document.getElementById('at').value) || 0;
+  if (!m || !tg) { T('Isi modal dan target jual dulu!'); return; }
+  var p = parseFloat(document.getElementById('ap').value) || 0;
+  var b = parseInt(document.getElementById('ab').value) || 6;
+  var inf = parseFloat(document.getElementById('ai2').value) || 5;
+  var tp = 0;
+  for (var i = 0; i < b; i++) tp += p * Math.pow(1 + inf/100/12, i);
+  var tm = m + tp, pr = tg - tm, rv = (pr/tm)*100, mo = pr/b, pb = tm/(tg/b);
+  var c = rv >= 20 ? 'var(--green)' : rv >= 10 ? '#D4960A' : 'var(--red)';
+  document.getElementById('rpct').style.color = c;
+  document.getElementById('rpct').style.textShadow = '0 0 24px ' + c;
+  document.getElementById('rpct').textContent = rv.toFixed(1) + '%';
+  document.getElementById('rdesc').style.color = c;
+  document.getElementById('rdesc').textContent = rv >= 20 ? '🔥 Sangat Menguntungkan' : rv >= 10 ? '⚡ Cukup Baik' : '⚠ Di Bawah Target';
+  document.getElementById('rmod').textContent = FR(tm);
+  document.getElementById('rprf').textContent = (pr >= 0 ? '+' : '') + FR(pr);
+  document.getElementById('rmon').textContent = FR(mo) + '/bln';
+  document.getElementById('rpay').textContent = pb.toFixed(1) + ' bln';
+  document.getElementById('rrec').textContent = rv >= 20 ? 'ROI ' + rv.toFixed(1) + '% jauh di atas rata-rata. Waktu optimal jual bulan ke-' + b + '.' : rv >= 10 ? 'ROI ' + rv.toFixed(1) + '% cukup baik. Coba kurangi biaya pakan atau naikkan target jual.' : 'ROI ' + rv.toFixed(1) + '% di bawah target. Perpanjang masa penggemukan untuk nambah nilai jual.';
+  document.getElementById('rres').style.display = 'block';
+}
+
+// ── COMMUNITY CHAT ──
+function doSendComm() {
+  var inp = document.getElementById('cinp');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  var user = window.currentUser;
+  var name = user ? (user.displayName || user.email.split('@')[0]) : 'Peternak';
+  var msgs = document.getElementById('cmsgs');
+  msgs.innerHTML += '<div class="cmsg"><div class="cav2">😊</div><div class="cbbl"><div class="cu">' + name + ' · Mojokerto</div><div class="clc">🇮🇩 · baru saja</div><div class="ct">' + txt + '</div></div></div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  inp.value = '';
+  if (user && db) {
+    db.collection('community_chat').add({uid: user.uid, name: name, loc: 'Mojokerto', country: '🇮🇩', flag: '😊', text: txt, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+  }
+}
+
+// ── CHART ──
+function buildChart() {
+  var bars = document.getElementById('cbars');
+  var lbls = document.getElementById('clbls');
+  if (!bars) return;
+  var p = [36,37,36.5,37.8,38,37.5,38.5];
+  var d = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  var mx = Math.max.apply(null, p);
+  bars.innerHTML = p.map(function(v, i) {
+    return '<div class="cbar' + (i === p.length-1 ? ' hi' : '') + '" style="height:' + (v/mx*100) + '%"></div>';
+  }).join('');
+  lbls.innerHTML = d.map(function(x) {
+    return '<div style="flex:1;text-align:center;font-size:8px;color:var(--t3)">' + x + '</div>';
+  }).join('');
+}
+
+// ── TOAST ──
+function T(msg) {
+  var el = document.getElementById('toastel');
+  el.textContent = msg;
+  el.classList.add('on');
+  setTimeout(function() { el.classList.remove('on'); }, 2500);
+}
+
+
+// ── TIER SWITCHER ──
+var currentTier = 'OMEGA';
+function setTier(tier) {
+  currentTier = tier;
+  // Update nav badge
+  var el = document.getElementById('nav-tier');
+  if (el) el.textContent = tier;
+  // Update settings display
+  var sd = document.getElementById('set-tier-display');
+  if (sd) sd.textContent = tier;
+  // Update checkmarks
+  ['BASIC','PRO','EXCLUSIVE','OMEGA'].forEach(function(t) {
+    var c = document.getElementById('tier-check-' + t);
+    if (c) c.style.display = t === tier ? 'inline' : 'none';
+  });
+  // Update tier row highlight
+  document.querySelectorAll('#tier-list .csrow').forEach(function(row, i) {
+    var tiers = ['BASIC','PRO','EXCLUSIVE','OMEGA'];
+    row.style.background = tiers[i] === tier ? 'var(--gd)' : '';
+    row.style.borderColor = tiers[i] === tier ? 'var(--bdr)' : '';
+  });
+  T('Mode ' + tier + ' aktif');
+  CM('m-tier');
+}
+
+// ── NOTIFICATIONS ──
+function clearNotifs() {
+  document.getElementById('notif-list').innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">Tidak ada notifikasi</div>';
+  document.getElementById('notif-dot').style.display = 'none';
+  T('Notifikasi dihapus');
+}
+
+// ── SETTINGS ──
+function saveSettings() {
+  var loc = document.getElementById('set-location');
+  if (loc && loc.value) T('✅ Pengaturan disimpan!');
+  CM('sub-settings');
+}
+
+// Update settings display on auth
+function updateSettingsDisplay(user) {
+  var sn = document.getElementById('set-name-display');
+  var se = document.getElementById('set-email-display');
+  if (sn) sn.textContent = user.displayName || '-';
+  if (se) se.textContent = user.email || '-';
+}
+
+// ── INIT ──
+RA();
+RL();
+buildChart();
+
+// Load real weather from wttr.in via Vercel
+function loadWeather() {
+  fetch('/api/weather?city=Mojokerto')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d || d.error) return;
+      function wi(desc) {
+        var dl = (desc||'').toLowerCase();
+        if (dl.includes('sunny')||dl.includes('cerah')) return '☀️';
+        if (dl.includes('rain')||dl.includes('hujan')) return '🌧';
+        if (dl.includes('thunder')||dl.includes('petir')) return '⛈';
+        if (dl.includes('cloud')||dl.includes('berawan')) return '☁️';
+        return '⛅';
+      }
+      var te = document.getElementById('wx-temp');
+      var de = document.getElementById('wx-desc');
+      if (te) te.textContent = d.temp + '°C';
+      if (de) de.textContent = wi(d.desc) + ' ' + d.desc + ' · ' + d.humidity + '%';
+      var fc = document.getElementById('wx-forecast');
+      if (fc && d.forecast) {
+        var days = ['Hari ini','Besok','Selasa','Rabu','Kamis'];
+        fc.innerHTML = d.forecast.map(function(f,i) {
+          return '<div class="fc"><div style="font-size:9px;color:var(--t2)">'+(days[i]||'')+'</div><div style="font-size:19px;margin:4px 0">'+wi(f.desc)+'</div><div style="font-size:11px;font-weight:600">'+f.max+'°C</div><div style="font-size:9px;color:var(--t2)">'+f.min+'°C</div></div>';
+        }).join('');
+      }
+    }).catch(function() {});
+}
+loadWeather();
+</script>
+
+<!-- SUB: SETTINGS -->
+<div id="sub-settings" class="sub">
+  <div class="back" onclick="CS('sub-settings')"><span style="color:var(--gold);font-size:16px">←</span><span style="font-size:12px;color:var(--t2);margin-left:7px">Dashboard</span></div>
+  <div class="eye">PENGATURAN GLOBAL</div>
+  <div class="h1" style="margin-bottom:16px">Settings</div>
+
+  <!-- Akun -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">AKUN</div>
+  <div class="csrow" style="margin-bottom:6px">
+    <span style="font-size:15px">👤</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Nama Tampilan</div>
+      <div style="font-size:10px;color:var(--t2)" id="set-name-display">—</div>
+    </div>
+    <button onclick="T('Edit profil dalam pengembangan')" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer">Edit</button>
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📧</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Email</div>
+      <div style="font-size:10px;color:var(--t2)" id="set-email-display">—</div>
+    </div>
+  </div>
+
+  <!-- Tier -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">SUBSCRIPTION</div>
+  <div class="csrow" style="margin-bottom:6px">
+    <span style="font-size:15px">⭐</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Tier Aktif</div>
+      <div style="font-size:10px;color:var(--gold);font-weight:700" id="set-tier-display">OMEGA</div>
+    </div>
+    <button onclick="OM('m-tier')" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer">Ubah</button>
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📅</span>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:600;color:var(--t1)">Berlaku Hingga</div>
+      <div style="font-size:10px;color:var(--t2)">31 Maret 2026</div>
+    </div>
+  </div>
+
+  <!-- Notifikasi -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">NOTIFIKASI</div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🚨</span><span style="font-size:11px;color:var(--t1)">Alert Kesehatan Hewan</span></div>
+    <input type="checkbox" id="set-notif-health" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">📈</span><span style="font-size:11px;color:var(--t1)">Update Harga Pasar</span></div>
+    <input type="checkbox" id="set-notif-market" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:14px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🌤</span><span style="font-size:11px;color:var(--t1)">Peringatan Cuaca Ekstrem</span></div>
+    <input type="checkbox" id="set-notif-weather" style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+
+  <!-- Tampilan -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">TAMPILAN</div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🌙</span><span style="font-size:11px;color:var(--t1)">Dark Mode</span></div>
+    <input type="checkbox" id="set-dark" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">🌐</span>
+    <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--t1)">Bahasa</div></div>
+    <select id="set-lang" style="background:var(--s3);border:1px solid var(--b2);color:var(--t1);border-radius:7px;padding:4px 8px;font-size:11px">
+      <option value="id">🇮🇩 Indonesia</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="ms">🇲🇾 Melayu</option>
+    </select>
+  </div>
+
+  <!-- Lokasi Default -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">LOKASI DEFAULT</div>
+  <div class="csrow" style="margin-bottom:14px">
+    <span style="font-size:15px">📍</span>
+    <div style="flex:1"><input class="inp" id="set-location" placeholder="cth: Mojosari, Mojokerto" style="background:transparent;border:none;padding:0;font-size:11px" value="Mojosari, Mojokerto"></div>
+  </div>
+
+  <!-- AI -->
+  <div style="font-size:10px;color:var(--gold);font-weight:600;letter-spacing:1px;margin-bottom:8px">OMEGA INTELLIGENCE</div>
+  <div class="csrow" style="margin-bottom:6px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">🤖</span><span style="font-size:11px;color:var(--t1)">Jawaban Mendalam</span></div>
+    <input type="checkbox" id="set-ai-deep" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+  <div class="csrow" style="margin-bottom:20px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">📝</span><span style="font-size:11px;color:var(--t1)">Render Markdown</span></div>
+    <input type="checkbox" id="set-ai-md" checked style="accent-color:var(--gold);width:16px;height:16px">
+  </div>
+
+  <button class="btn btn-g" onclick="saveSettings()">Simpan Pengaturan</button>
+  <button class="bout" onclick="doLogout()" style="margin-top:9px">Keluar dari Akun</button>
+</div>
+
+<!-- MODAL: TIER -->
+<div class="modal" id="m-tier" onclick="if(event.target.id==='m-tier')CM('m-tier')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1);margin-bottom:4px">SUBSCRIPTION TIER</div>
+    <div style="font-size:10px;color:var(--t2);margin-bottom:16px">Pilih tier untuk simulasi atau upgrade</div>
+    <div id="tier-list">
+      <div class="csrow" onclick="setTier('BASIC')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:16px">🌱</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--t1)">BASIC <span style="font-size:9px;color:var(--t3)">Gratis</span></div>
+          <div style="font-size:10px;color:var(--t2)">5 hewan · Health 3x/bln · ada iklan</div>
+        </div>
+        <span id="tier-check-BASIC" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('PRO')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,145,168,.15);display:flex;align-items:center;justify-content:center;font-size:16px">⚡</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--cyan)">PRO <span style="font-size:9px;color:var(--t3)">Rp 99rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">Unlimited · Annuity ROI · AI 100 msg/bln</div>
+        </div>
+        <span id="tier-check-PRO" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('EXCLUSIVE')" style="cursor:pointer;margin-bottom:7px;border-radius:11px">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(124,58,237,.15);display:flex;align-items:center;justify-content:center;font-size:16px">💎</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--pur)">EXCLUSIVE <span style="font-size:9px;color:var(--t3)">Rp 199rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">PRO + QR Tag backup · AI unlimited · Cuaca</div>
+        </div>
+        <span id="tier-check-EXCLUSIVE" style="color:var(--green);display:none">✓</span>
+      </div>
+      <div class="csrow" onclick="setTier('OMEGA')" style="cursor:pointer;margin-bottom:7px;border-radius:11px;background:var(--gd);border-color:var(--bdr)">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(200,152,26,.15);display:flex;align-items:center;justify-content:center;font-size:16px">Ω</div>
+        <div style="flex:1;margin-left:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--gold)">OMEGA <span style="font-size:9px;color:var(--t3)">Rp 499rb/bln</span></div>
+          <div style="font-size:10px;color:var(--t2)">Semua fitur · 5 QR Tag/bln · diskon HW 50%</div>
+        </div>
+        <span id="tier-check-OMEGA" style="color:var(--green)">✓</span>
+      </div>
+    </div>
+    <button class="btn btn-g" style="margin-top:8px" onclick="CM('m-tier')">Tutup</button>
+  </div>
+</div>
+
+<!-- MODAL: NOTIFIKASI -->
+<div class="modal" id="m-notif" onclick="if(event.target.id==='m-notif')CM('m-notif')">
+  <div class="mbox">
+    <div class="mbar"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--t1)">NOTIFIKASI</div>
+      <span onclick="clearNotifs()" style="font-size:10px;color:var(--t2);cursor:pointer">Hapus semua</span>
+    </div>
+    <div id="notif-list">
+      <div class="csrow" style="margin-bottom:7px;align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">⚠ Titan — Status DARURAT</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Sapi Simmental kamu memerlukan perhatian segera. Pantau dalam 6-12 jam.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">2 jam lalu</div>
+        </div>
+      </div>
+      <div class="csrow" style="margin-bottom:7px;align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">📈 Harga Kambing Naik 1.8%</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Mendekati puncak pre-Idul Adha. Waktu jual optimal H-21 hingga H-14.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">5 jam lalu</div>
+        </div>
+      </div>
+      <div class="csrow" style="align-items:flex-start">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:4px;flex-shrink:0"></div>
+        <div style="margin-left:10px;flex:1">
+          <div style="font-size:11px;font-weight:600;color:var(--t1)">🌧 Peringatan Cuaca</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">Hujan lebat diprediksi di Mojokerto besok. Pastikan kandang tertutup.</div>
+          <div style="font-size:9px;color:var(--t3);margin-top:3px">8 jam lalu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
