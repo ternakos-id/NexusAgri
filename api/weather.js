@@ -1,10 +1,10 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
   try {
     const { lat, lon, city } = req.query;
-    const location = city || (lat && lon ? `${lat},${lon}` : 'Mojokerto');
+    const location = city || (lat && lon ? `${lat},${lon}` : 'Mojosari');
     const response = await fetch(`https://wttr.in/${encodeURIComponent(location)}?format=j1`);
     const data = await response.json();
     const current = data.current_condition[0];
@@ -25,4 +25,4 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
