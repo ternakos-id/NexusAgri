@@ -1,0 +1,21 @@
+{
+  "name": "TernakOS",
+  "short_name": "TernakOS",
+  "description": "The Operating System for Living Ecosystems",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0F1A",
+  "theme_color": "#C8981A",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Monitor Ternak", "url": "/?screen=mon", "icons": [{"src": "/icon-192.png", "sizes": "192x192"}] },
+    { "name": "Market Intelligence", "url": "/?screen=mkt", "icons": [{"src": "/icon-192.png", "sizes": "192x192"}] }
+  ],
+  "categories": ["agriculture", "business", "productivity"],
+  "lang": "id",
+  "dir": "ltr"
+}
