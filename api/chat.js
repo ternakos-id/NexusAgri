@@ -1,6 +1,3 @@
-// NexusAgri · /api/chat.js
-// OpenRouter FREE Models — auto-fallback
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,24 +7,20 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const KEY = process.env.OPENROUTER_API_KEY;
-
-  // ── Debug: cek apakah key ada ──
   if (!KEY) {
-    console.error('OPENROUTER_API_KEY is not set');
-    return res.status(500).json({
-      error: 'API key tidak ditemukan di server. Set OPENROUTER_API_KEY di Vercel Environment Variables lalu Redeploy.'
-    });
+    return res.status(500).json({ error: 'OPENROUTER_API_KEY belum diset di Vercel.' });
   }
-  console.log('Key present:', KEY.slice(0, 12) + '...');
 
-  // Free models — dari yang terbaru gue lihat di OpenRouter
-  const MODELS = [
-    'mistralai/mistral-7b-instruct:free',
+  // ── FREE MODELS YANG AKTIF MARET 2026 ──
+  // Diambil dari /api/v1/models OpenRouter
+  const FREE_MODELS = [
+    'google/gemini-2.0-flash-exp:free',
+    'google/gemini-flash-1.5-8b:free', 
     'meta-llama/llama-3.1-8b-instruct:free',
     'qwen/qwen-2.5-7b-instruct:free',
-    'google/gemini-2.0-flash-exp:free',
+    'deepseek/deepseek-r1-distill-llama-70b:free',
+    'nousresearch/hermes-3-llama-3.1-405b:free',
     'minimax/minimax-m2.7:free',
-    'xiaomi/mimo-v2-omni:free',
   ];
 
   try {
@@ -36,7 +29,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'messages array required' });
     }
 
-    const SYSTEM = `Kamu adalah Omega Intelligence — AI konsultan NexusAgri. Ahli ternak, pertanian, aquaculture, dan agribisnis Indonesia. Jawab singkat, padat, pakai angka nyata. Tutup dengan 1 aksi konkret.`;
+    const SYSTEM = `Kamu adalah Omega Intelligence — AI konsultan NexusAgri. Spesialis ternak, pertanian, aquaculture Indonesia. Jawab singkat padat dengan angka nyata. Tutup dengan 1 aksi konkret hari ini.`;
 
     let sysContent = SYSTEM;
     let chatMsgs = messages;
@@ -45,19 +38,17 @@ export default async function handler(req, res) {
       chatMsgs = messages.slice(1);
     }
 
-    const body = {
-      messages: [
-        { role: 'system', content: sysContent },
-        ...chatMsgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
-      ],
-      max_tokens: max_tokens || 800,
-      temperature: 0.7,
-    };
+    const formattedMsgs = [
+      { role: 'system', content: sysContent },
+      ...chatMsgs.map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+      }))
+    ];
 
     const errors = [];
 
-    for (const model of MODELS) {
-      console.log('Trying model:', model);
+    for (const model of FREE_MODELS) {
       try {
         const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
@@ -67,26 +58,57 @@ export default async function handler(req, res) {
             'HTTP-Referer': 'https://nexusagri.vercel.app',
             'X-Title': 'NexusAgri',
           },
-          body: JSON.stringify({ ...body, model }),
+          body: JSON.stringify({
+            model,
+            messages: formattedMsgs,
+            max_tokens: max_tokens || 800,
+            temperature: 0.7,
+          }),
           signal: AbortSignal.timeout(20000),
         });
 
         const text = await r.text();
-        console.log(`${model} → ${r.status}: ${text.slice(0, 200)}`);
 
-        if (r.status === 429) { errors.push(`${model}: rate limited`); continue; }
-        if (!r.ok) { errors.push(`${model}: HTTP ${r.status} — ${text.slice(0, 100)}`); continue; }
+        // Model tidak ada → skip ke berikutnya
+        if (r.status === 404) {
+          errors.push(`${model}: not found`);
+          continue;
+        }
+
+        // Rate limit → skip ke berikutnya
+        if (r.status === 429) {
+          errors.push(`${model}: rate limited`);
+          continue;
+        }
+
+        // Butuh kredit → skip ke berikutnya
+        if (r.status === 402) {
+          errors.push(`${model}: requires credits`);
+          continue;
+        }
+
+        if (!r.ok) {
+          errors.push(`${model}: HTTP ${r.status}`);
+          continue;
+        }
 
         let data;
-        try { data = JSON.parse(text); } catch(e) { errors.push(`${model}: invalid JSON`); continue; }
+        try { data = JSON.parse(text); } catch(e) {
+          errors.push(`${model}: invalid JSON`);
+          continue;
+        }
 
         const content = data.choices?.[0]?.message?.content;
-        if (!content) { errors.push(`${model}: empty content`); continue; }
+        if (!content) {
+          errors.push(`${model}: empty`);
+          continue;
+        }
 
-        console.log('Success with model:', model);
+        // SUCCESS
         return res.status(200).json({
           choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }],
           model: data.model || model,
+          usage: data.usage || {}
         });
 
       } catch (e) {
@@ -95,15 +117,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // Semua model gagal — return detail error untuk debugging
-    console.error('All models failed:', errors);
+    // Semua gagal
     return res.status(503).json({
-      error: 'Semua AI model sedang tidak tersedia. Coba lagi dalam beberapa menit.',
-      debug: errors, // hapus ini setelah production
+      error: 'AI sedang overload. Coba lagi dalam beberapa menit.',
+      errors
     });
 
   } catch (e) {
-    console.error('Handler error:', e);
     return res.status(500).json({ error: e.message });
   }
 }
